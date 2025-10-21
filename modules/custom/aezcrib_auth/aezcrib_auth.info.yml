@@ -1,0 +1,13 @@
+name: AezCrib Authentication
+description: Custom authentication module for AezCrib React frontend
+type: module
+version: 1.0.0
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:user
+  - drupal:rest
+  - drupal:serialization
+  - drupal:hal
+  - cors:cors
+  - jwt:jwt
+  - key:key

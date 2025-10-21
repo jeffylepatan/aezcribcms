@@ -1,0 +1,31 @@
+aezcrib_auth.user_login:
+  path: '/api/auth/login'
+  defaults:
+    _controller: '\Drupal\aezcrib_auth\Controller\AuthController::login'
+  methods: [POST]
+  requirements:
+    _permission: 'access content'
+
+aezcrib_auth.user_register:
+  path: '/api/auth/register'
+  defaults:
+    _controller: '\Drupal\aezcrib_auth\Controller\AuthController::register'
+  methods: [POST]
+  requirements:
+    _permission: 'access content'
+
+aezcrib_auth.user_logout:
+  path: '/api/auth/logout'
+  defaults:
+    _controller: '\Drupal\aezcrib_auth\Controller\AuthController::logout'
+  methods: [POST]
+  requirements:
+    _permission: 'access content'
+
+aezcrib_auth.user_me:
+  path: '/api/auth/me'
+  defaults:
+    _controller: '\Drupal\aezcrib_auth\Controller\AuthController::me'
+  methods: [GET]
+  requirements:
+    _user_is_logged_in: 'TRUE'
