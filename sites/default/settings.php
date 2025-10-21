@@ -851,11 +851,12 @@ $settings['migrate_node_migrate_type_classic'] = FALSE;
 # if (file_exists($app_root . '/' . $site_path . '/settings.local.php')) {
 #   include $app_root . '/' . $site_path . '/settings.local.php';
 # }
+
 $databases['default']['default'] = array (
-  'database' => 'u466597217_Y0wu4',
-  'username' => 'u466597217_TwzMU',
-  'password' => 'VV4;)EX_K<4<Pd,{',
-  'prefix' => 'hrrq_',
+  'database' => 'u466597217_JQNtn',
+  'username' => 'u466597217_z2HEr',
+  'password' => 'U?G6/k0)sKv&kUAw',
+  'prefix' => 'c6od_',
   'host' => '127.0.0.1',
   'port' => '3306',
   'isolation_level' => 'READ COMMITTED',
