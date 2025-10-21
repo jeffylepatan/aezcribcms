@@ -8,6 +8,3 @@ dependencies:
   - drupal:rest
   - drupal:serialization
   - drupal:hal
-  - cors:cors
-  - jwt:jwt
-  - key:key

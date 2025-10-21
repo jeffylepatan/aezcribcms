@@ -10,8 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\Component\Serialization\Json;
-use Drupal\jwt\Transcoder\JwtTranscoderInterface;
-use Drupal\jwt\Authentication\Provider\JwtAuth;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class AuthController
@@ -33,19 +32,11 @@ class AuthController extends ControllerBase {
   protected $currentUser;
 
   /**
-   * The JWT transcoder.
-   *
-   * @var \Drupal\jwt\Transcoder\JwtTranscoderInterface
-   */
-  protected $jwtTranscoder;
-
-  /**
    * Constructs a new AuthController object.
    */
-  public function __construct(UserAuthInterface $user_auth, AccountInterface $current_user, JwtTranscoderInterface $jwt_transcoder) {
+  public function __construct(UserAuthInterface $user_auth, AccountInterface $current_user) {
     $this->userAuth = $user_auth;
     $this->currentUser = $current_user;
-    $this->jwtTranscoder = $jwt_transcoder;
   }
 
   /**
@@ -54,9 +45,19 @@ class AuthController extends ControllerBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('user.auth'),
-      $container->get('current_user'),
-      $container->get('jwt.transcoder')
+      $container->get('current_user')
     );
+  }
+
+  /**
+   * Add CORS headers to response.
+   */
+  private function addCorsHeaders(Response $response) {
+    $response->headers->set('Access-Control-Allow-Origin', 'https://aezcrib.xyz');
+    $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    $response->headers->set('Access-Control-Allow-Credentials', 'true');
+    return $response;
   }
 
   /**
@@ -67,37 +68,33 @@ class AuthController extends ControllerBase {
       $data = Json::decode($request->getContent());
       
       if (empty($data['email']) || empty($data['password'])) {
-        return new JsonResponse([
+        $response = new JsonResponse([
           'message' => 'Email and password are required',
         ], 400);
+        return $this->addCorsHeaders($response);
       }
 
       // Authenticate user
       $uid = $this->userAuth->authenticate($data['email'], $data['password']);
       
       if (!$uid) {
-        return new JsonResponse([
+        $response = new JsonResponse([
           'message' => 'Invalid email or password',
         ], 401);
+        return $this->addCorsHeaders($response);
       }
 
       $user = User::load($uid);
       
       if (!$user || !$user->isActive()) {
-        return new JsonResponse([
+        $response = new JsonResponse([
           'message' => 'Account is blocked or does not exist',
         ], 401);
+        return $this->addCorsHeaders($response);
       }
 
-      // Generate JWT token
-      $payload = [
-        'iat' => time(),
-        'exp' => time() + (7 * 24 * 60 * 60), // 7 days
-        'uid' => $user->id(),
-        'sub' => $user->getAccountName(),
-      ];
-
-      $token = $this->jwtTranscoder->encode($payload);
+      // Log in user to create session
+      user_login_finalize($user);
 
       // Get user role
       $roles = $user->getRoles();
@@ -109,20 +106,23 @@ class AuthController extends ControllerBase {
         }
       }
 
-      return new JsonResponse([
+      $response = new JsonResponse([
         'user' => [
           'id' => $user->id(),
           'email' => $user->getEmail(),
           'name' => $user->getDisplayName(),
           'role' => $custom_role,
         ],
-        'token' => $token,
+        'token' => session_id(), // Use session ID as token
       ]);
 
+      return $this->addCorsHeaders($response);
+
     } catch (\Exception $e) {
-      return new JsonResponse([
+      $response = new JsonResponse([
         'message' => 'An error occurred during login',
       ], 500);
+      return $this->addCorsHeaders($response);
     }
   }
 
@@ -137,25 +137,28 @@ class AuthController extends ControllerBase {
       $required_fields = ['email', 'password', 'firstName', 'lastName', 'role'];
       foreach ($required_fields as $field) {
         if (empty($data[$field])) {
-          return new JsonResponse([
+          $response = new JsonResponse([
             'message' => ucfirst($field) . ' is required',
           ], 400);
+          return $this->addCorsHeaders($response);
         }
       }
 
       // Check if user already exists
       $existing_user = user_load_by_mail($data['email']);
       if ($existing_user) {
-        return new JsonResponse([
+        $response = new JsonResponse([
           'message' => 'An account with this email already exists',
         ], 400);
+        return $this->addCorsHeaders($response);
       }
 
       // Validate role
       if (!in_array($data['role'], ['parent', 'educator', 'creator'])) {
-        return new JsonResponse([
+        $response = new JsonResponse([
           'message' => 'Invalid role selected',
         ], 400);
+        return $this->addCorsHeaders($response);
       }
 
       // Create user
@@ -164,38 +167,31 @@ class AuthController extends ControllerBase {
         'mail' => $data['email'],
         'pass' => $data['password'],
         'status' => 1,
-        'field_first_name' => $data['firstName'],
-        'field_last_name' => $data['lastName'],
       ]);
 
       $user->addRole($data['role']);
       $user->save();
 
       // Auto-login after registration
-      // Generate JWT token
-      $payload = [
-        'iat' => time(),
-        'exp' => time() + (7 * 24 * 60 * 60), // 7 days
-        'uid' => $user->id(),
-        'sub' => $user->getAccountName(),
-      ];
+      user_login_finalize($user);
 
-      $token = $this->jwtTranscoder->encode($payload);
-
-      return new JsonResponse([
+      $response = new JsonResponse([
         'user' => [
           'id' => $user->id(),
           'email' => $user->getEmail(),
           'name' => $data['firstName'] . ' ' . $data['lastName'],
           'role' => $data['role'],
         ],
-        'token' => $token,
+        'token' => session_id(), // Use session ID as token
       ], 201);
 
+      return $this->addCorsHeaders($response);
+
     } catch (\Exception $e) {
-      return new JsonResponse([
+      $response = new JsonResponse([
         'message' => 'An error occurred during registration',
       ], 500);
+      return $this->addCorsHeaders($response);
     }
   }
 
@@ -203,23 +199,32 @@ class AuthController extends ControllerBase {
    * Logout endpoint.
    */
   public function logout(Request $request) {
-    // For JWT, we can't invalidate tokens server-side easily
-    // The frontend should remove the token from storage
-    return new JsonResponse([
+    user_logout();
+    
+    $response = new JsonResponse([
       'message' => 'Logged out successfully',
     ]);
+    return $this->addCorsHeaders($response);
   }
 
   /**
    * Get current user endpoint.
    */
   public function me(Request $request) {
+    if ($this->currentUser->isAnonymous()) {
+      $response = new JsonResponse([
+        'message' => 'Not authenticated',
+      ], 401);
+      return $this->addCorsHeaders($response);
+    }
+
     $user = User::load($this->currentUser->id());
     
     if (!$user) {
-      return new JsonResponse([
+      $response = new JsonResponse([
         'message' => 'User not found',
       ], 404);
+      return $this->addCorsHeaders($response);
     }
 
     // Get user role
@@ -232,7 +237,7 @@ class AuthController extends ControllerBase {
       }
     }
 
-    return new JsonResponse([
+    $response = new JsonResponse([
       'user' => [
         'id' => $user->id(),
         'email' => $user->getEmail(),
@@ -240,5 +245,15 @@ class AuthController extends ControllerBase {
         'role' => $custom_role,
       ],
     ]);
+
+    return $this->addCorsHeaders($response);
+  }
+
+  /**
+   * Handle OPTIONS requests for CORS.
+   */
+  public function options(Request $request) {
+    $response = new Response('', 200);
+    return $this->addCorsHeaders($response);
   }
 }

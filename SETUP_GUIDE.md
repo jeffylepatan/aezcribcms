@@ -47,20 +47,19 @@ aezcribcms/
 
 ## 🔧 Backend (Drupal) Configuration
 
-### Required Modules (Added to composer.json)
+### Built-in Modules Used
 
-- `drupal/cors` - Cross-Origin Resource Sharing
-- `drupal/jwt` - JWT Authentication
-- `drupal/key` - Key management for JWT
 - `drupal/restui` - REST UI (already installed)
+- Core JSON:API and REST modules
+- Core User module with session authentication
 
 ### Custom Module: `aezcrib_auth`
 
 Provides:
 - Custom user roles (Parent, Educator, Creator)
 - REST API endpoints for authentication
-- JWT token generation and validation
-- CORS configuration
+- Session-based authentication (more stable than JWT)
+- Built-in CORS headers for API communication
 
 ### API Endpoints
 
@@ -68,6 +67,7 @@ Provides:
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/logout` - User logout
 - `GET /api/auth/me` - Get current user info
+- `OPTIONS /api/auth/*` - CORS preflight requests
 
 ## 📋 Deployment Instructions
 
@@ -112,32 +112,21 @@ This will:
 1. **Enable Modules**
    ```bash
    # Via Drush (if available)
-   drush en cors jwt key aezcrib_auth -y
+   drush en aezcrib_auth -y
    
    # Or via Drupal admin UI
    # Go to /app/admin/modules and enable:
-   # - CORS
-   # - JWT
-   # - Key
    # - AezCrib Authentication
    ```
 
-2. **Configure JWT Key**
-   - Go to `/app/admin/config/system/keys`
-   - Create a new key for JWT signing
-   - Use a strong random string (256-bit recommended)
-
-3. **Configure CORS**
-   - Go to `/app/admin/config/services/cors`
-   - Enable CORS
-   - Add allowed origins: `https://aezcrib.xyz`
-   - Allow methods: GET, POST, PUT, DELETE, OPTIONS
-   - Allow headers: Authorization, Content-Type
-
-4. **Configure REST**
+2. **Configure REST (if needed)**
    - Go to `/app/admin/config/services/rest`
    - Enable JSON:API if not already enabled
-   - Configure user authentication to accept JWT tokens
+   - The custom module handles CORS automatically
+
+3. **Verify User Roles**
+   - Go to `/app/admin/people/roles`
+   - Confirm Parent, Educator, and Creator roles exist
 
 ## 🔗 URLs After Deployment
 
@@ -147,12 +136,13 @@ This will:
 
 ## 🔐 Security Considerations
 
-1. **JWT Token Security**
-   - Tokens expire after 7 days
-   - Stored securely in HTTP-only cookies
-   - HTTPS enforced in production
+1. **Session-Based Authentication**
+   - Uses Drupal's built-in session management
+   - More secure than JWT for this use case
+   - Automatic session expiration
 
 2. **CORS Configuration**
+   - Built into the custom module
    - Only allows specific origins
    - Credentials supported for authentication
 
@@ -214,12 +204,12 @@ This will:
 ### Common Issues
 
 1. **CORS Errors**
-   - Check CORS module configuration
-   - Verify allowed origins include your domain
+   - The custom module handles CORS automatically
+   - Verify the module is enabled
 
 2. **Authentication Failures**
-   - Verify JWT module configuration
-   - Check JWT key is properly set
+   - Check that the custom module is properly installed
+   - Verify user roles exist
 
 3. **Build Errors**
    - Check Node.js version (16+ recommended)

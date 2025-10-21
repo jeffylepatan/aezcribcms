@@ -29,3 +29,12 @@ aezcrib_auth.user_me:
   methods: [GET]
   requirements:
     _user_is_logged_in: 'TRUE'
+
+aezcrib_auth.options:
+  path: '/api/auth/{path}'
+  defaults:
+    _controller: '\Drupal\aezcrib_auth\Controller\AuthController::options'
+  methods: [OPTIONS]
+  requirements:
+    _permission: 'access content'
+    path: '.+'

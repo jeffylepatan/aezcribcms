@@ -1,5 +1,4 @@
 import axios from 'axios';
-import Cookies from 'js-cookie';
 import type { User, LoginCredentials, RegisterData, AuthResponse, ApiError } from '@/types/auth';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://aezcrib.xyz/app';
@@ -10,25 +9,16 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
+  withCredentials: true, // Important for session-based auth
 });
 
-// Add token to requests automatically
-api.interceptors.request.use((config) => {
-  const token = Cookies.get('auth_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Handle token refresh and errors
+// Handle errors
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      // Token expired, try to refresh or logout
-      Cookies.remove('auth_token');
+      // Session expired, logout
+      localStorage.removeItem('user_data');
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -36,16 +26,14 @@ api.interceptors.response.use(
 );
 
 export class AuthService {
-  private static readonly TOKEN_KEY = 'auth_token';
   private static readonly USER_KEY = 'user_data';
 
   static async login(credentials: LoginCredentials): Promise<User> {
     try {
       const response = await api.post<AuthResponse>('/api/auth/login', credentials);
-      const { user, token } = response.data;
+      const { user } = response.data;
       
-      // Store token and user data
-      Cookies.set(this.TOKEN_KEY, token, { expires: 7, secure: true, sameSite: 'strict' });
+      // Store user data
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
       
       return user;
@@ -57,10 +45,9 @@ export class AuthService {
   static async register(data: RegisterData): Promise<User> {
     try {
       const response = await api.post<AuthResponse>('/api/auth/register', data);
-      const { user, token } = response.data;
+      const { user } = response.data;
       
       // Auto-login after registration
-      Cookies.set(this.TOKEN_KEY, token, { expires: 7, secure: true, sameSite: 'strict' });
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
       
       return user;
@@ -76,23 +63,19 @@ export class AuthService {
       // Continue with logout even if API call fails
       console.error('Logout API call failed:', error);
     } finally {
-      Cookies.remove(this.TOKEN_KEY);
       localStorage.removeItem(this.USER_KEY);
     }
   }
 
   static async getCurrentUser(): Promise<User | null> {
     try {
-      const token = Cookies.get(this.TOKEN_KEY);
-      if (!token) return null;
-
       const response = await api.get<{ user: User }>('/api/auth/me');
       const user = response.data.user;
       
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
       return user;
     } catch (error) {
-      this.logout();
+      localStorage.removeItem(this.USER_KEY);
       return null;
     }
   }
@@ -107,7 +90,7 @@ export class AuthService {
   }
 
   static isAuthenticated(): boolean {
-    return !!Cookies.get(this.TOKEN_KEY);
+    return !!this.getStoredUser();
   }
 
   private static handleError(error: any): ApiError {
