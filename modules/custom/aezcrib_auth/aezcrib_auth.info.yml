@@ -7,4 +7,3 @@ dependencies:
   - drupal:user
   - drupal:rest
   - drupal:serialization
-  - drupal:hal
