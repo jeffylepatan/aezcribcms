@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
 import Link from 'next/link';
-import { BookOpen, Users, PenTool, ArrowRight, Play, Download, Star, Heart, Mail, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BookOpen, Users, PenTool, ArrowRight, Play, Download, Star, Heart, Mail, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 // TypeScript interface for worksheet data from Drupal API
@@ -17,12 +17,27 @@ interface WorksheetData {
   subject: string;
 }
 
+// TypeScript interface for video data from Drupal API
+interface VideoData {
+  title: string;
+  title_1: string;
+  field_video_description: string;
+  field_video_thumbnail: string;
+  field_video_url: string;
+  field_video_views: string;
+}
+
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [worksheets, setWorksheets] = useState<WorksheetData[]>([]);
+  const [videos, setVideos] = useState<VideoData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [videosLoading, setVideosLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [videosError, setVideosError] = useState<string | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<VideoData | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch worksheets from Drupal API
   useEffect(() => {
@@ -54,77 +69,65 @@ export default function Home() {
     fetchWorksheets();
   }, []);
 
-  // Sample video data - replace with actual video URLs and data
-  const videoShowcase = [
-    {
-      id: 1,
-      title: "Learning Numbers with Fun Worksheets",
-      caption: "Watch Alex master counting with our colorful number worksheets! 🎯",
-      thumbnail: "/api/placeholder/400/300",
-      videoUrl: "#"
-    },
-    {
-      id: 2,
-      title: "Creative Letter Tracing Adventure",
-      caption: "See how Emma practices writing letters with our interactive activities! ✨",
-      thumbnail: "/api/placeholder/400/300",
-      videoUrl: "#"
-    },
-    {
-      id: 3,
-      title: "Science Experiments Made Simple",
-      caption: "Join Jake as he explores amazing science experiments at home! 🔬",
-      thumbnail: "/api/placeholder/400/300",
-      videoUrl: "#"
-    }
-  ];
+  // Fetch videos from Drupal API
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        setVideosLoading(true);
+        const response = await fetch('https://aezcrib.xyz/app/api/json/videos', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
-  // Sample video content data
-  const featuredVideos = [
-    {
-      id: 1,
-      title: "How to Use Number Worksheets",
-      description: "Step-by-step guide for parents and educators",
-      thumbnail: "/api/placeholder/300/200",
-      duration: "5:32",
-      views: 2840,
-      category: "Tutorial"
-    },
-    {
-      id: 2,
-      title: "Creative Learning at Home",
-      description: "Tips for making learning fun and engaging",
-      thumbnail: "/api/placeholder/300/200",
-      duration: "8:15",
-      views: 1967,
-      category: "Tips"
-    },
-    {
-      id: 3,
-      title: "Success Stories: Parent Reviews",
-      description: "Real families share their AezCrib experience",
-      thumbnail: "/api/placeholder/300/200",
-      duration: "6:43",
-      views: 1523,
-      category: "Reviews"
-    },
-    {
-      id: 4,
-      title: "Educational Games & Activities",
-      description: "Fun ways to extend worksheet learning",
-      thumbnail: "/api/placeholder/300/200",
-      duration: "7:28",
-      views: 1205,
-      category: "Activities"
-    }
-  ];
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: VideoData[] = await response.json();
+        setVideos(data);
+        setVideosError(null);
+      } catch (err) {
+        console.error('Error fetching videos:', err);
+        setVideosError('Failed to load videos');
+      } finally {
+        setVideosLoading(false);
+      }
+    };
+
+    fetchVideos();
+  }, []);
 
   const nextVideo = () => {
-    setCurrentVideoIndex((prev) => (prev + 1) % videoShowcase.length);
+    setCurrentVideoIndex((prev) => (prev + 1) % videos.length);
   };
 
   const prevVideo = () => {
-    setCurrentVideoIndex((prev) => (prev - 1 + videoShowcase.length) % videoShowcase.length);
+    setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length);
+  };
+
+  // Function to extract YouTube video ID from URL
+  const getYouTubeVideoId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  // Function to open video modal
+  const openVideoModal = (video: VideoData) => {
+    setSelectedVideo(video);
+    setIsModalOpen(true);
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+  };
+
+  // Function to close video modal
+  const closeVideoModal = () => {
+    setSelectedVideo(null);
+    setIsModalOpen(false);
+    // Re-enable body scroll
+    document.body.style.overflow = 'unset';
   };
 
   return (
@@ -215,16 +218,34 @@ export default function Home() {
                 <div className="relative">
                   {/* Video Thumbnail */}
                   <div className="aspect-video bg-gray-200 flex items-center justify-center relative">
-                    <img 
-                      src={videoShowcase[currentVideoIndex].thumbnail} 
-                      alt={videoShowcase[currentVideoIndex].title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-                      <button className="w-20 h-20 rounded-full flex items-center justify-center transition-transform hover:scale-110" style={{ backgroundColor: '#FFD166' }}>
-                        <Play className="w-8 h-8 ml-1" style={{ color: '#5C6B73' }} />
-                      </button>
-                    </div>
+                    {videos.length > 0 ? (
+                      <>
+                        <img 
+                          src={`https://aezcrib.xyz${videos[currentVideoIndex]?.field_video_thumbnail}`} 
+                          alt={videos[currentVideoIndex]?.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/api/placeholder/400/300';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                          <button 
+                            onClick={() => videos[currentVideoIndex] && openVideoModal(videos[currentVideoIndex])}
+                            className="w-20 h-20 rounded-full flex items-center justify-center transition-transform hover:scale-110" 
+                            style={{ backgroundColor: '#FFD166' }}
+                          >
+                            <Play className="w-8 h-8 ml-1" style={{ color: '#5C6B73' }} />
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <div className="text-center">
+                          <Play className="w-12 h-12 mx-auto mb-4" style={{ color: '#5C6B73' }} />
+                          <p style={{ color: '#5C6B73' }}>Loading videos...</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Navigation Arrows */}
@@ -247,17 +268,21 @@ export default function Home() {
                 {/* Video Info */}
                 <div className="p-8">
                   <h3 className="text-2xl font-bold mb-3" style={{ color: '#5C6B73' }}>
-                    {videoShowcase[currentVideoIndex].title}
+                    {videos.length > 0 ? videos[currentVideoIndex]?.title : 'Loading Videos...'}
                   </h3>
                   <p className="text-lg" style={{ color: '#5C6B73' }}>
-                    {videoShowcase[currentVideoIndex].caption}
+                    {videos.length > 0 ? (
+                      videos[currentVideoIndex]?.field_video_description.length > 120 
+                        ? `${videos[currentVideoIndex]?.field_video_description.substring(0, 120)}...` 
+                        : videos[currentVideoIndex]?.field_video_description
+                    ) : 'Please wait while we load the latest educational videos...'}
                   </p>
                 </div>
               </div>
 
               {/* Video Indicators */}
               <div className="flex justify-center mt-6 space-x-3">
-                {videoShowcase.map((_, index) => (
+                {videos.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentVideoIndex(index)}
@@ -409,42 +434,94 @@ export default function Home() {
               </div>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                {featuredVideos.map((video) => (
-                  <div key={video.id} className="rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2" style={{ backgroundColor: '#FFFFFF' }}>
-                    <div className="relative aspect-video bg-gray-200">
-                      <img 
-                        src={video.thumbnail} 
-                        alt={video.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        <button className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD166' }}>
-                          <Play className="w-5 h-5 ml-0.5" style={{ color: '#5C6B73' }} />
-                        </button>
-                      </div>
-                      <div className="absolute bottom-2 right-2 px-2 py-1 rounded text-xs font-medium" style={{ backgroundColor: 'rgba(0,0,0,0.7)', color: '#FFFFFF' }}>
-                        {video.duration}
+                {videosLoading ? (
+                  // Loading skeleton for videos
+                  Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="rounded-xl overflow-hidden shadow-lg animate-pulse" style={{ backgroundColor: '#FFFFFF' }}>
+                      <div className="aspect-video bg-gray-200"></div>
+                      <div className="p-6">
+                        <div className="w-20 h-6 bg-gray-200 rounded-full mb-2"></div>
+                        <div className="w-3/4 h-6 bg-gray-200 rounded mb-2"></div>
+                        <div className="w-full h-12 bg-gray-200 rounded mb-4"></div>
+                        <div className="w-24 h-4 bg-gray-200 rounded"></div>
                       </div>
                     </div>
-                    <div className="p-6">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: '#FFF3E0', color: '#FFD166' }}>
-                          {video.category}
-                        </span>
-                      </div>
-                      <h3 className="text-lg font-bold mb-2" style={{ color: '#5C6B73' }}>
-                        {video.title}
-                      </h3>
-                      <p className="text-sm mb-4" style={{ color: '#5C6B73' }}>
-                        {video.description}
-                      </p>
-                      <div className="flex items-center text-sm" style={{ color: '#5C6B73' }}>
-                        <Heart className="w-4 h-4 mr-1" />
-                        {video.views.toLocaleString()} views
-                      </div>
-                    </div>
+                  ))
+                ) : videosError ? (
+                  // Error state for videos
+                  <div className="col-span-full text-center py-12">
+                    <p className="text-lg" style={{ color: '#5C6B73' }}>
+                      😔 {videosError}
+                    </p>
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="mt-4 px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105"
+                      style={{ backgroundColor: '#FFD166', color: '#5C6B73' }}
+                    >
+                      Try Again
+                    </button>
                   </div>
-                ))}
+                ) : videos.length === 0 ? (
+                  // No data state for videos
+                  <div className="col-span-full text-center py-12">
+                    <p className="text-lg" style={{ color: '#5C6B73' }}>
+                      🎥 No videos available at the moment
+                    </p>
+                  </div>
+                ) : (
+                  // Actual video data
+                  videos.map((video, index) => (
+                    <div key={index} className="rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 flex flex-col" style={{ backgroundColor: '#FFFFFF' }}>
+                      <div className="relative aspect-video bg-gray-200">
+                        <img 
+                          src={`https://aezcrib.xyz${video.field_video_thumbnail}`} 
+                          alt={video.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/api/placeholder/300/200';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => openVideoModal(video)}
+                            className="w-12 h-12 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: '#FFD166' }}
+                          >
+                            <Play className="w-5 h-5 ml-0.5" style={{ color: '#5C6B73' }} />
+                          </button>
+                        </div>
+                        {video.field_video_views && (
+                          <div className="absolute bottom-2 right-2 px-2 py-1 rounded text-xs font-medium" style={{ backgroundColor: 'rgba(0,0,0,0.7)', color: '#FFFFFF' }}>
+                            {video.field_video_views} views
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-6 flex flex-col flex-grow">
+                        <h3 className="text-lg font-bold mb-2" style={{ color: '#5C6B73' }}>
+                          {video.title}
+                        </h3>
+                        <p className="text-sm mb-4 flex-grow" style={{ color: '#5C6B73' }}>
+                          {video.field_video_description.length > 80 
+                            ? `${video.field_video_description.substring(0, 80)}...` 
+                            : video.field_video_description}
+                        </p>
+                        <div className="flex items-center justify-between mt-auto">
+                          <div className="flex items-center text-sm" style={{ color: '#5C6B73' }}>
+                            <Play className="w-4 h-4 mr-1" />
+                            Watch Video
+                          </div>
+                          <button
+                            onClick={() => openVideoModal(video)}
+                            className="px-3 py-1 rounded-lg text-sm font-semibold transition-all hover:scale-105"
+                            style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
+                          >
+                            Play
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -555,6 +632,77 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Video Modal */}
+      {isModalOpen && selectedVideo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75">
+          <div className="relative w-full max-w-4xl mx-auto bg-white rounded-xl overflow-hidden shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b" style={{ backgroundColor: '#FFFFFF' }}>
+              <h3 className="text-xl font-bold" style={{ color: '#5C6B73' }}>
+                {selectedVideo.title}
+              </h3>
+              <button
+                onClick={closeVideoModal}
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                style={{ color: '#5C6B73' }}
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {/* Video Content */}
+            <div className="relative" style={{ paddingTop: '56.25%' }}>
+              {getYouTubeVideoId(selectedVideo.field_video_url) ? (
+                <iframe
+                  className="absolute inset-0 w-full h-full"
+                  src={`https://www.youtube.com/embed/${getYouTubeVideoId(selectedVideo.field_video_url)}?autoplay=1`}
+                  title={selectedVideo.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                  <div className="text-center">
+                    <p className="text-lg mb-4" style={{ color: '#5C6B73' }}>
+                      Video format not supported in modal
+                    </p>
+                    <a
+                      href={selectedVideo.field_video_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105"
+                      style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
+                    >
+                      Watch in New Tab
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Video Description */}
+            <div className="p-6" style={{ backgroundColor: '#F8F9FA' }}>
+              <p className="text-gray-700 leading-relaxed">
+                {selectedVideo.field_video_description}
+              </p>
+              {selectedVideo.field_video_views && (
+                <div className="mt-4 flex items-center text-sm" style={{ color: '#5C6B73' }}>
+                  <Play className="w-4 h-4 mr-1" />
+                  {selectedVideo.field_video_views} views
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Click outside to close */}
+          <div 
+            className="absolute inset-0 -z-10" 
+            onClick={closeVideoModal}
+          ></div>
+        </div>
+      )}
     </div>
   );
 }
