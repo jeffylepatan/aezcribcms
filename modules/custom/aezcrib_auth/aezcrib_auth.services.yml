@@ -1,4 +1,0 @@
-services:
-  aezcrib_auth.auth_service:
-    class: Drupal\aezcrib_auth\Service\AuthService
-    arguments: ['@user.auth', '@current_user', '@jwt.transcoder']

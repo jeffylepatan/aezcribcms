@@ -1,8 +1,0 @@
-cors.settings:
-  enabled: true
-  allowedHeaders: ['accept', 'accept-language', 'authorization', 'content-language', 'content-type', 'user-agent', 'x-requested-with']
-  allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
-  allowedOrigins: ['https://aezcrib.xyz', 'http://localhost:3000', 'http://127.0.0.1:3000']
-  exposedHeaders: false
-  maxAge: false
-  supportsCredentials: true
