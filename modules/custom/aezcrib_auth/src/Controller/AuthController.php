@@ -280,4 +280,16 @@ class AuthController extends ControllerBase {
     $response = new Response('', 200);
     return $this->addCorsHeaders($response, $request);
   }
+
+  /**
+   * Test endpoint to verify CORS headers.
+   */
+  public function test(Request $request) {
+    $response = new JsonResponse([
+      'message' => 'CORS test endpoint',
+      'origin' => $request->headers->get('Origin', 'not-provided'),
+      'method' => $request->getMethod(),
+    ]);
+    return $this->addCorsHeaders($response, $request);
+  }
 }

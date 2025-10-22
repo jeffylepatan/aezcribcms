@@ -61,3 +61,11 @@ aezcrib_auth.options_me:
   methods: [OPTIONS]
   requirements:
     _access: 'TRUE'
+
+aezcrib_auth.test:
+  path: '/api/auth/test'
+  defaults:
+    _controller: '\Drupal\aezcrib_auth\Controller\AuthController::test'
+  methods: [GET, OPTIONS]
+  requirements:
+    _access: 'TRUE'
