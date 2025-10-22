@@ -175,7 +175,7 @@ export default function Home() {
               {/* Large Friendly Logo */}
               <div className="mb-8">
                 <h1 className="text-6xl md:text-8xl font-bold mb-4 tracking-tight">
-                  🌟 AezCrib
+                  AezCrib
                 </h1>
                 <p className="text-xl md:text-2xl font-medium">
                   Where Learning Becomes an Adventure!
@@ -185,11 +185,10 @@ export default function Home() {
               {/* Hero Content */}
               <div className="max-w-4xl mx-auto">
                 <h2 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
-                  Educational Worksheets & Videos That Make Kids Love Learning
+                  Educational Worksheets That Make Kids Love Learning
                 </h2>
                 <p className="text-xl md:text-2xl mb-8 leading-relaxed">
-                  Join thousands of families discovering the joy of learning with our carefully crafted 
-                  worksheets, engaging videos, and proven educational activities.
+                  Our main goal is to help reduce screentime for kids especially during their formative years by providing printable and engaging offline activities.
                 </p>
                 
                 {isAuthenticated ? (
@@ -220,7 +219,7 @@ export default function Home() {
                     </Link>
                     <Link
                       href="#showcase"
-                      className="border-3 text-white px-10 py-5 rounded-xl font-bold text-lg hover:bg-white hover:bg-opacity-10 transition-all"
+                      className="border-3 text-white px-10 py-5 rounded-xl font-bold text-lg hover:bg-white hover:text-gray-800 transition-all"
                       style={{ borderColor: '#FFFFFF', borderWidth: '3px' }}
                     >
                       See It In Action ▶️
@@ -440,7 +439,22 @@ export default function Home() {
                         </p>
                         <div className="flex items-center justify-between mt-auto">
                           <div className="flex items-center text-sm" style={{ color: '#5C6B73' }}>
-                            <span className="font-semibold">${worksheet.price}</span>
+                            <img 
+                              src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png" 
+                              alt="AezCoins" 
+                              className="w-4 h-4 mr-1"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                const parent = e.currentTarget.parentElement;
+                                if (parent) {
+                                  const fallback = document.createElement('span');
+                                  fallback.textContent = '$';
+                                  fallback.className = 'font-semibold';
+                                  parent.insertBefore(fallback, e.currentTarget);
+                                }
+                              }}
+                            />
+                            <span className="font-semibold">{worksheet.price}</span>
                           </div>
                           <a
                             href={`https://aezcrib.xyz${worksheet.worksheet}`}
