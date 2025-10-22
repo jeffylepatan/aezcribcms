@@ -14,7 +14,7 @@ echo "📦 Installing dependencies..."
 npm install
 
 echo "🔧 Building production version..."
-npm run build
+npm run build:prod
 
 echo "📁 Preparing deployment files..."
 

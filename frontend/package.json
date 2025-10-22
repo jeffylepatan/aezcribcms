@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "build:prod": "NODE_ENV=production next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "dev:api": "echo 'Frontend running at http://localhost:3000' && echo 'API connecting to https://aezcrib.xyz/app' && npm run dev"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
