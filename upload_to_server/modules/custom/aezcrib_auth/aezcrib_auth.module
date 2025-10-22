@@ -1,0 +1,106 @@
+<?php
+
+/**
+ * @file
+ * Implements hooks for the AezCrib Authentication module.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\user\Entity\Role;
+use Drupal\user\Entity\User;
+
+/**
+ * Implements hook_install().
+ */
+function aezcrib_auth_install() {
+  // Create custom user roles if they don't exist
+  $roles = [
+    'parent' => 'Parent',
+    'educator' => 'Educator',
+    'creator' => 'Creator',
+  ];
+
+  foreach ($roles as $role_id => $role_label) {
+    if (!Role::load($role_id)) {
+      $role = Role::create([
+        'id' => $role_id,
+        'label' => $role_label,
+        'weight' => 2,
+      ]);
+      $role->save();
+
+      // Set permissions for each role
+      $permissions = [];
+      switch ($role_id) {
+        case 'parent':
+          $permissions = [
+            'access content',
+            'access user profiles',
+            'view own user profile',
+            'edit own user profile',
+          ];
+          break;
+        case 'educator':
+          $permissions = [
+            'access content',
+            'access user profiles',
+            'view own user profile',
+            'edit own user profile',
+            'create article content',
+            'edit own article content',
+            'view published content',
+          ];
+          break;
+        case 'creator':
+          $permissions = [
+            'access content',
+            'access user profiles',
+            'view own user profile',
+            'edit own user profile',
+            'create article content',
+            'edit own article content',
+            'view published content',
+            'create page content',
+            'edit own page content',
+          ];
+          break;
+      }
+
+      user_role_grant_permissions($role_id, $permissions);
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function aezcrib_auth_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Add role selection field to user registration
+  $form['aezcrib_role'] = [
+    '#type' => 'radios',
+    '#title' => t('Select your role'),
+    '#required' => TRUE,
+    '#options' => [
+      'parent' => t('Parent - Support your child\'s educational journey'),
+      'educator' => t('Educator - Share knowledge and teach others'),
+      'creator' => t('Creator - Develop and monetize educational content'),
+    ],
+    '#weight' => -10,
+  ];
+
+  // Add custom submit handler
+  $form['actions']['submit']['#submit'][] = 'aezcrib_auth_user_register_submit';
+}
+
+/**
+ * Custom submit handler for user registration.
+ */
+function aezcrib_auth_user_register_submit($form, FormStateInterface $form_state) {
+  $role = $form_state->getValue('aezcrib_role');
+  $user = $form_state->getFormObject()->getEntity();
+  
+  if ($user && $role) {
+    $user->addRole($role);
+    $user->save();
+  }
+}
