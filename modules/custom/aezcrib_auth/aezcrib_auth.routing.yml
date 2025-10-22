@@ -2,17 +2,17 @@ aezcrib_auth.user_login:
   path: '/api/auth/login'
   defaults:
     _controller: '\Drupal\aezcrib_auth\Controller\AuthController::login'
-  methods: [POST]
+  methods: [POST, OPTIONS]
   requirements:
-    _permission: 'access content'
+    _access: 'TRUE'
 
 aezcrib_auth.user_register:
   path: '/api/auth/register'
   defaults:
     _controller: '\Drupal\aezcrib_auth\Controller\AuthController::register'
-  methods: [POST]
+  methods: [POST, OPTIONS]
   requirements:
-    _permission: 'access content'
+    _access: 'TRUE'
 
 aezcrib_auth.user_logout:
   path: '/api/auth/logout'
@@ -20,7 +20,7 @@ aezcrib_auth.user_logout:
     _controller: '\Drupal\aezcrib_auth\Controller\AuthController::logout'
   methods: [POST]
   requirements:
-    _permission: 'access content'
+    _access: 'TRUE'
 
 aezcrib_auth.user_me:
   path: '/api/auth/me'
@@ -29,38 +29,6 @@ aezcrib_auth.user_me:
   methods: [GET]
   requirements:
     _user_is_logged_in: 'TRUE'
-
-aezcrib_auth.options_login:
-  path: '/api/auth/login'
-  defaults:
-    _controller: '\Drupal\aezcrib_auth\Controller\AuthController::options'
-  methods: [OPTIONS]
-  requirements:
-    _access: 'TRUE'
-
-aezcrib_auth.options_register:
-  path: '/api/auth/register'
-  defaults:
-    _controller: '\Drupal\aezcrib_auth\Controller\AuthController::options'
-  methods: [OPTIONS]
-  requirements:
-    _access: 'TRUE'
-
-aezcrib_auth.options_logout:
-  path: '/api/auth/logout'
-  defaults:
-    _controller: '\Drupal\aezcrib_auth\Controller\AuthController::options'
-  methods: [OPTIONS]
-  requirements:
-    _access: 'TRUE'
-
-aezcrib_auth.options_me:
-  path: '/api/auth/me'
-  defaults:
-    _controller: '\Drupal\aezcrib_auth\Controller\AuthController::options'
-  methods: [OPTIONS]
-  requirements:
-    _access: 'TRUE'
 
 aezcrib_auth.test:
   path: '/api/auth/test'

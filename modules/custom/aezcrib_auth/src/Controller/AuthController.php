@@ -88,6 +88,12 @@ class AuthController extends ControllerBase {
    * Login endpoint.
    */
   public function login(Request $request) {
+    // Handle OPTIONS request for CORS preflight
+    if ($request->getMethod() === 'OPTIONS') {
+      $response = new Response('', 200);
+      return $this->addCorsHeaders($response, $request);
+    }
+
     try {
       $data = Json::decode($request->getContent());
       
@@ -154,6 +160,12 @@ class AuthController extends ControllerBase {
    * Register endpoint.
    */
   public function register(Request $request) {
+    // Handle OPTIONS request for CORS preflight
+    if ($request->getMethod() === 'OPTIONS') {
+      $response = new Response('', 200);
+      return $this->addCorsHeaders($response, $request);
+    }
+
     try {
       $data = Json::decode($request->getContent());
       
