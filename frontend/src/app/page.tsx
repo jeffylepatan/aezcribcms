@@ -275,7 +275,7 @@ export default function Home() {
                           style={{ background: 'linear-gradient(135deg, #4BC0C8 0%, #FFD166 100%)' }}
                         />
                         {/* Overlay that appears on hover - higher z-index */}
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center transition-all duration-300 z-20">
+                        <div className="absolute inset-0 bg-transparent flex items-center justify-center transition-all duration-300 z-20">
                           <button 
                             className="w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 opacity-60 group-hover:opacity-100 group-hover:scale-110" 
                             style={{ backgroundColor: '#FFD166' }}
