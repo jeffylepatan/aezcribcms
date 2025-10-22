@@ -53,7 +53,24 @@ class AuthController extends ControllerBase {
    * Add CORS headers to response.
    */
   private function addCorsHeaders(Response $response) {
-    $response->headers->set('Access-Control-Allow-Origin', 'https://aezcrib.xyz');
+    // Allow multiple origins for development and production
+    $allowedOrigins = [
+      'https://aezcrib.xyz',
+      'http://localhost:3000',
+      'http://127.0.0.1:3000'
+    ];
+    
+    // Get the requesting origin
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    
+    // Set the appropriate origin if it's in our allowed list
+    if (in_array($origin, $allowedOrigins)) {
+      $response->headers->set('Access-Control-Allow-Origin', $origin);
+    } else {
+      // Default to production domain
+      $response->headers->set('Access-Control-Allow-Origin', 'https://aezcrib.xyz');
+    }
+    
     $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     $response->headers->set('Access-Control-Allow-Credentials', 'true');
