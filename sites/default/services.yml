@@ -202,23 +202,23 @@ parameters:
   # for more information about the topic in general.
   # Note: By default the configuration is disabled.
   cors.config:
-    enabled: false
+    enabled: true
     # Specifies allowed headers and sets the Access-Control-Allow-Headers
     # header. For example, ['X-Custom-Header']. See
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Headers
-    allowedHeaders: []
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token']
     # Specifies allowed request methods and sets the
     # Access-Control-Allow-Methods header. For example, ['POST', 'GET',
     # 'OPTIONS'] or ['*'] to allow all. Note the wildcard is not yet implemented
     # in all browsers. See
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Methods
-    allowedMethods: []
+    allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
     # Configure requests allowed from specific origins and sets the
     # Access-Control-Allow-Origin header. For example,
     # ['https://www.drupal.org'] or ['*'] to allow any origin to access your
     # resource. See
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
-    allowedOrigins: ['*']
+    allowedOrigins: ['https://aezcrib.xyz', 'http://localhost:3000', 'http://127.0.0.1:3000']
     # Configure requests allowed from origins, matching against regex patterns.
     allowedOriginsPatterns: []
     # Sets the Access-Control-Expose-Headers header. The default is false which
@@ -233,10 +233,10 @@ parameters:
     # caching. For example, setting the value to 600 will cache results of a
     # preflight request for 10 minutes. See
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age
-    maxAge: false
+    maxAge: 86400
     # Sets the Access-Control-Allow-Credentials header if set to true. See
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials
-    supportsCredentials: false
+    supportsCredentials: true
 
   # The maximum number of entities stored in memory. Lowering this number can
   # reduce the amount of memory used in long-running processes like migrations,

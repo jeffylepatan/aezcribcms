@@ -2,7 +2,7 @@ aezcrib_auth.user_login:
   path: '/api/auth/login'
   defaults:
     _controller: '\Drupal\aezcrib_auth\Controller\AuthController::login'
-  methods: [POST, OPTIONS]
+  methods: [POST]
   requirements:
     _access: 'TRUE'
 
@@ -10,7 +10,7 @@ aezcrib_auth.user_register:
   path: '/api/auth/register'
   defaults:
     _controller: '\Drupal\aezcrib_auth\Controller\AuthController::register'
-  methods: [POST, OPTIONS]
+  methods: [POST]
   requirements:
     _access: 'TRUE'
 
