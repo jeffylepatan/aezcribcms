@@ -21,6 +21,7 @@ export interface RegisterData {
   confirmPassword: string;
   firstName: string;
   lastName: string;
+  phoneNumber: string;
   role: 'parent' | 'educator' | 'creator';
 }
 

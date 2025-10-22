@@ -31,11 +31,14 @@ export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [worksheets, setWorksheets] = useState<WorksheetData[]>([]);
-  const [videos, setVideos] = useState<VideoData[]>([]);
+  const [videos, setVideos] = useState<VideoData[]>([]); // Featured videos for carousel
+  const [latestVideos, setLatestVideos] = useState<VideoData[]>([]); // All videos for latest section
   const [loading, setLoading] = useState(true);
   const [videosLoading, setVideosLoading] = useState(true);
+  const [latestVideosLoading, setLatestVideosLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [videosError, setVideosError] = useState<string | null>(null);
+  const [latestVideosError, setLatestVideosError] = useState<string | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<VideoData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -69,12 +72,12 @@ export default function Home() {
     fetchWorksheets();
   }, []);
 
-  // Fetch videos from Drupal API
+  // Fetch featured videos from Drupal API for "Watch Real Kids..." section
   useEffect(() => {
     const fetchVideos = async () => {
       try {
         setVideosLoading(true);
-        const response = await fetch('https://aezcrib.xyz/app/api/json/videos', {
+        const response = await fetch('https://aezcrib.xyz/app/api/json/videos-featured', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -89,14 +92,44 @@ export default function Home() {
         setVideos(data);
         setVideosError(null);
       } catch (err) {
-        console.error('Error fetching videos:', err);
-        setVideosError('Failed to load videos');
+        console.error('Error fetching featured videos:', err);
+        setVideosError('Failed to load featured videos');
       } finally {
         setVideosLoading(false);
       }
     };
 
     fetchVideos();
+  }, []);
+
+  // Fetch latest videos from Drupal API for "Latest Videos" section
+  useEffect(() => {
+    const fetchLatestVideos = async () => {
+      try {
+        setLatestVideosLoading(true);
+        const response = await fetch('https://aezcrib.xyz/app/api/json/videos', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: VideoData[] = await response.json();
+        setLatestVideos(data);
+        setLatestVideosError(null);
+      } catch (err) {
+        console.error('Error fetching latest videos:', err);
+        setLatestVideosError('Failed to load latest videos');
+      } finally {
+        setLatestVideosLoading(false);
+      }
+    };
+
+    fetchLatestVideos();
   }, []);
 
   const nextVideo = () => {
@@ -217,21 +250,34 @@ export default function Home() {
               <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ backgroundColor: '#FFFFFF' }}>
                 <div className="relative">
                   {/* Video Thumbnail */}
-                  <div className="aspect-video bg-gray-200 flex items-center justify-center relative">
+                  <div className="aspect-video bg-gray-200 relative group cursor-pointer"
+                       onClick={() => videos[currentVideoIndex] && openVideoModal(videos[currentVideoIndex])}>
                     {videos.length > 0 ? (
                       <>
+                        {/* Image with explicit z-index */}
                         <img 
                           src={`https://aezcrib.xyz${videos[currentVideoIndex]?.field_video_thumbnail}`} 
                           alt={videos[currentVideoIndex]?.title}
-                          className="w-full h-full object-cover"
+                          className="absolute inset-0 w-full h-full object-cover z-10"
                           onError={(e) => {
-                            e.currentTarget.src = '/api/placeholder/400/300';
+                            console.log('Thumbnail failed to load:', e.currentTarget.src);
+                            console.log('Original path:', videos[currentVideoIndex]?.field_video_thumbnail);
+                            // Hide the broken image and show gradient background
+                            e.currentTarget.style.display = 'none';
+                          }}
+                          onLoad={() => {
+                            console.log('Thumbnail loaded successfully:', videos[currentVideoIndex]?.field_video_thumbnail);
                           }}
                         />
-                        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                        {/* Fallback gradient background */}
+                        <div 
+                          className="absolute inset-0 z-0"
+                          style={{ background: 'linear-gradient(135deg, #4BC0C8 0%, #FFD166 100%)' }}
+                        />
+                        {/* Overlay that appears on hover - higher z-index */}
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center transition-all duration-300 z-20">
                           <button 
-                            onClick={() => videos[currentVideoIndex] && openVideoModal(videos[currentVideoIndex])}
-                            className="w-20 h-20 rounded-full flex items-center justify-center transition-transform hover:scale-110" 
+                            className="w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 opacity-60 group-hover:opacity-100 group-hover:scale-110" 
                             style={{ backgroundColor: '#FFD166' }}
                           >
                             <Play className="w-8 h-8 ml-1" style={{ color: '#5C6B73' }} />
@@ -239,7 +285,7 @@ export default function Home() {
                         </div>
                       </>
                     ) : (
-                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center">
                           <Play className="w-12 h-12 mx-auto mb-4" style={{ color: '#5C6B73' }} />
                           <p style={{ color: '#5C6B73' }}>Loading videos...</p>
@@ -251,14 +297,14 @@ export default function Home() {
                   {/* Navigation Arrows */}
                   <button 
                     onClick={prevVideo}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-110"
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-110 z-30"
                     style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)' }}
                   >
                     <ChevronLeft className="w-6 h-6" style={{ color: '#5C6B73' }} />
                   </button>
                   <button 
                     onClick={nextVideo}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-110"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-110 z-30"
                     style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)' }}
                   >
                     <ChevronRight className="w-6 h-6" style={{ color: '#5C6B73' }} />
@@ -434,7 +480,7 @@ export default function Home() {
               </div>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                {videosLoading ? (
+                {latestVideosLoading ? (
                   // Loading skeleton for videos
                   Array.from({ length: 4 }).map((_, index) => (
                     <div key={index} className="rounded-xl overflow-hidden shadow-lg animate-pulse" style={{ backgroundColor: '#FFFFFF' }}>
@@ -447,11 +493,11 @@ export default function Home() {
                       </div>
                     </div>
                   ))
-                ) : videosError ? (
+                ) : latestVideosError ? (
                   // Error state for videos
                   <div className="col-span-full text-center py-12">
                     <p className="text-lg" style={{ color: '#5C6B73' }}>
-                      😔 {videosError}
+                      😔 {latestVideosError}
                     </p>
                     <button
                       onClick={() => window.location.reload()}
@@ -461,7 +507,7 @@ export default function Home() {
                       Try Again
                     </button>
                   </div>
-                ) : videos.length === 0 ? (
+                ) : latestVideos.length === 0 ? (
                   // No data state for videos
                   <div className="col-span-full text-center py-12">
                     <p className="text-lg" style={{ color: '#5C6B73' }}>
@@ -470,7 +516,7 @@ export default function Home() {
                   </div>
                 ) : (
                   // Actual video data
-                  videos.map((video, index) => (
+                  latestVideos.map((video, index) => (
                     <div key={index} className="rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 flex flex-col" style={{ backgroundColor: '#FFFFFF' }}>
                       <div className="relative aspect-video bg-gray-200">
                         <img 

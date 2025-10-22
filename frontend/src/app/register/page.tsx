@@ -8,15 +8,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
-import { Eye, EyeOff, Loader2, Users, BookOpen, PenTool } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Users } from 'lucide-react';
 
 const registerSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
+  phoneNumber: z.string().min(10, 'Please enter a valid phone number').regex(/^[\+]?[1-9][\d]{0,15}$/, 'Please enter a valid phone number'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string(),
-  role: z.enum(['parent', 'educator', 'creator'], {
+  role: z.enum(['parent'], {
     message: 'Please select a role',
   }),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -30,23 +31,9 @@ const roles = [
   {
     value: 'parent',
     label: 'Parent',
-    description: 'Support your child\'s educational journey',
+    description: 'Support your child\'s educational journey with engaging worksheets and videos',
     icon: Users,
     color: 'green',
-  },
-  {
-    value: 'educator',
-    label: 'Educator',
-    description: 'Share knowledge and teach others',
-    icon: BookOpen,
-    color: 'blue',
-  },
-  {
-    value: 'creator',
-    label: 'Creator',
-    description: 'Develop and monetize educational content',
-    icon: PenTool,
-    color: 'purple',
   },
 ] as const;
 
@@ -119,43 +106,48 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen pt-16" style={{ backgroundColor: '#D9F7F4' }}>
       <Navbar />
       
       <div className="flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold mb-2" style={{ color: '#4BC0C8' }}>
+              🌟 Join AezCrib
+            </h1>
+          </div>
+          <h2 className="text-center text-2xl font-bold" style={{ color: '#5C6B73' }}>
+            Create your parent account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
+          <p className="mt-2 text-center text-sm" style={{ color: '#5C6B73' }}>
+            Already have an account?{' '}
             <Link
               href="/login"
-              className="font-medium text-blue-600 hover:text-blue-500"
+              className="font-medium transition-colors hover:opacity-80"
+              style={{ color: '#4BC0C8' }}
             >
-              sign in to existing account
+              Sign in here
             </Link>
           </p>
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="py-8 px-4 shadow-xl sm:rounded-xl sm:px-10" style={{ backgroundColor: '#FFFFFF' }}>
             <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
               {apiError && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+                <div className="border px-4 py-3 rounded-md text-sm" style={{ backgroundColor: '#FFF3E0', borderColor: '#FFD166', color: '#5C6B73' }}>
                   {apiError}
                 </div>
               )}
 
               {/* Role Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-4">
-                  Choose your role
+                <label className="block text-sm font-medium mb-4" style={{ color: '#5C6B73' }}>
+                  Account Type
                 </label>
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="max-w-md mx-auto">
                   {roles.map((role) => {
                     const Icon = role.icon;
-                    const isSelected = selectedRole === role.value;
                     
                     return (
                       <div key={role.value}>
@@ -165,15 +157,17 @@ export default function RegisterPage() {
                           value={role.value}
                           id={role.value}
                           className="sr-only"
+                          defaultChecked={true}
                         />
                         <label
                           htmlFor={role.value}
-                          className={getColorClasses(role.color, isSelected)}
+                          className="border-2 rounded-xl p-6 cursor-pointer transition-all hover:scale-105 block"
+                          style={{ borderColor: '#4BC0C8', backgroundColor: '#D9F7F4' }}
                         >
                           <div className="flex flex-col items-center text-center">
-                            <Icon className={`h-8 w-8 mb-2 ${getIconClasses(role.color, isSelected)}`} />
-                            <h3 className="font-semibold text-gray-900">{role.label}</h3>
-                            <p className="text-sm text-gray-600 mt-1">{role.description}</p>
+                            <Icon className="h-10 w-10 mb-3" style={{ color: '#4BC0C8' }} />
+                            <h3 className="font-bold text-lg" style={{ color: '#5C6B73' }}>{role.label}</h3>
+                            <p className="text-sm mt-2" style={{ color: '#5C6B73' }}>{role.description}</p>
                           </div>
                         </label>
                       </div>
@@ -181,14 +175,14 @@ export default function RegisterPage() {
                   })}
                 </div>
                 {errors.role && (
-                  <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
+                  <p className="mt-1 text-sm" style={{ color: '#FFD166' }}>{errors.role.message}</p>
                 )}
               </div>
 
               {/* Name Fields */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="firstName" className="block text-sm font-medium" style={{ color: '#5C6B73' }}>
                     First name
                   </label>
                   <div className="mt-1">
@@ -196,17 +190,20 @@ export default function RegisterPage() {
                       {...register('firstName')}
                       type="text"
                       autoComplete="given-name"
-                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 bg-white text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:border-transparent sm:text-sm"
+                      style={{ borderColor: '#D9F7F4', color: '#5C6B73' }}
                       placeholder="First name"
+                      onFocus={(e) => e.target.style.borderColor = '#4BC0C8'}
+                      onBlur={(e) => e.target.style.borderColor = '#D9F7F4'}
                     />
                     {errors.firstName && (
-                      <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
+                      <p className="mt-1 text-sm" style={{ color: '#FFD166' }}>{errors.firstName.message}</p>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="lastName" className="block text-sm font-medium" style={{ color: '#5C6B73' }}>
                     Last name
                   </label>
                   <div className="mt-1">
@@ -214,11 +211,14 @@ export default function RegisterPage() {
                       {...register('lastName')}
                       type="text"
                       autoComplete="family-name"
-                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 bg-white text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:border-transparent sm:text-sm"
+                      style={{ borderColor: '#D9F7F4', color: '#5C6B73' }}
                       placeholder="Last name"
+                      onFocus={(e) => e.target.style.borderColor = '#4BC0C8'}
+                      onBlur={(e) => e.target.style.borderColor = '#D9F7F4'}
                     />
                     {errors.lastName && (
-                      <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
+                      <p className="mt-1 text-sm" style={{ color: '#FFD166' }}>{errors.lastName.message}</p>
                     )}
                   </div>
                 </div>
@@ -226,7 +226,7 @@ export default function RegisterPage() {
 
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="email" className="block text-sm font-medium" style={{ color: '#5C6B73' }}>
                   Email address
                 </label>
                 <div className="mt-1">
@@ -234,11 +234,36 @@ export default function RegisterPage() {
                     {...register('email')}
                     type="email"
                     autoComplete="email"
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 bg-white text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:border-transparent sm:text-sm"
+                    style={{ borderColor: '#D9F7F4', color: '#5C6B73' }}
                     placeholder="Enter your email"
+                    onFocus={(e) => e.target.style.borderColor = '#4BC0C8'}
+                    onBlur={(e) => e.target.style.borderColor = '#D9F7F4'}
                   />
                   {errors.email && (
-                    <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                    <p className="mt-1 text-sm" style={{ color: '#FFD166' }}>{errors.email.message}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Phone Number */}
+              <div>
+                <label htmlFor="phoneNumber" className="block text-sm font-medium" style={{ color: '#5C6B73' }}>
+                  Phone number
+                </label>
+                <div className="mt-1">
+                  <input
+                    {...register('phoneNumber')}
+                    type="tel"
+                    autoComplete="tel"
+                    className="appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:border-transparent sm:text-sm"
+                    style={{ borderColor: '#D9F7F4', color: '#5C6B73' }}
+                    placeholder="Enter your phone number"
+                    onFocus={(e) => e.target.style.borderColor = '#4BC0C8'}
+                    onBlur={(e) => e.target.style.borderColor = '#D9F7F4'}
+                  />
+                  {errors.phoneNumber && (
+                    <p className="mt-1 text-sm" style={{ color: '#FFD166' }}>{errors.phoneNumber.message}</p>
                   )}
                 </div>
               </div>
@@ -246,7 +271,7 @@ export default function RegisterPage() {
               {/* Password Fields */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="password" className="block text-sm font-medium" style={{ color: '#5C6B73' }}>
                     Password
                   </label>
                   <div className="mt-1 relative">
@@ -254,8 +279,11 @@ export default function RegisterPage() {
                       {...register('password')}
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="new-password"
-                      className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 bg-white text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="appearance-none block w-full px-3 py-2 pr-10 border rounded-md placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:border-transparent sm:text-sm"
+                      style={{ borderColor: '#D9F7F4', color: '#5C6B73' }}
                       placeholder="Create password"
+                      onFocus={(e) => e.target.style.borderColor = '#4BC0C8'}
+                      onBlur={(e) => e.target.style.borderColor = '#D9F7F4'}
                     />
                     <button
                       type="button"
@@ -263,19 +291,19 @@ export default function RegisterPage() {
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
-                        <EyeOff className="h-5 w-5 text-gray-400" />
+                        <EyeOff className="h-5 w-5" style={{ color: '#5C6B73' }} />
                       ) : (
-                        <Eye className="h-5 w-5 text-gray-400" />
+                        <Eye className="h-5 w-5" style={{ color: '#5C6B73' }} />
                       )}
                     </button>
                   </div>
                   {errors.password && (
-                    <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                    <p className="mt-1 text-sm" style={{ color: '#FFD166' }}>{errors.password.message}</p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium" style={{ color: '#5C6B73' }}>
                     Confirm password
                   </label>
                   <div className="mt-1 relative">
@@ -283,8 +311,11 @@ export default function RegisterPage() {
                       {...register('confirmPassword')}
                       type={showConfirmPassword ? 'text' : 'password'}
                       autoComplete="new-password"
-                      className="appearance-none block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md placeholder-gray-400 bg-white text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="appearance-none block w-full px-3 py-2 pr-10 border rounded-md placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:border-transparent sm:text-sm"
+                      style={{ borderColor: '#D9F7F4', color: '#5C6B73' }}
                       placeholder="Confirm password"
+                      onFocus={(e) => e.target.style.borderColor = '#4BC0C8'}
+                      onBlur={(e) => e.target.style.borderColor = '#D9F7F4'}
                     />
                     <button
                       type="button"
@@ -292,14 +323,14 @@ export default function RegisterPage() {
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
                       {showConfirmPassword ? (
-                        <EyeOff className="h-5 w-5 text-gray-400" />
+                        <EyeOff className="h-5 w-5" style={{ color: '#5C6B73' }} />
                       ) : (
-                        <Eye className="h-5 w-5 text-gray-400" />
+                        <Eye className="h-5 w-5" style={{ color: '#5C6B73' }} />
                       )}
                     </button>
                   </div>
                   {errors.confirmPassword && (
-                    <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
+                    <p className="mt-1 text-sm" style={{ color: '#FFD166' }}>{errors.confirmPassword.message}</p>
                   )}
                 </div>
               </div>
@@ -308,7 +339,10 @@ export default function RegisterPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: '#FFD166', color: '#5C6B73' }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
                   {isLoading ? (
                     <>
@@ -316,7 +350,7 @@ export default function RegisterPage() {
                       Creating account...
                     </>
                   ) : (
-                    'Create account'
+                    'Create Account ✨'
                   )}
                 </button>
               </div>
@@ -324,6 +358,78 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+
+      {/* Enhanced Footer */}
+      <footer className="text-white py-16" style={{ backgroundColor: '#5C6B73' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-8 mb-12">
+            
+            {/* Brand & About */}
+            <div className="md:col-span-2">
+              <h3 className="text-3xl font-bold mb-4">🌟 AezCrib</h3>
+              <p className="text-lg mb-6 leading-relaxed" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                We believe every child deserves engaging, high-quality educational content. 
+                AezCrib transforms learning into an adventure, making education accessible, 
+                fun, and effective for families worldwide.
+              </p>
+              <div className="flex space-x-4">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+                  <span className="text-xl">📚</span>
+                </div>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+                  <span className="text-xl">🎯</span>
+                </div>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+                  <span className="text-xl">❤️</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="text-xl font-bold mb-4">Quick Links</h4>
+              <ul className="space-y-3">
+                <li><Link href="/worksheets" className="hover:opacity-80 transition-opacity" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Browse Worksheets</Link></li>
+                <li><Link href="/videos" className="hover:opacity-80 transition-opacity" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Watch Videos</Link></li>
+                <li><Link href="/pricing" className="hover:opacity-80 transition-opacity" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Pricing Plans</Link></li>
+                <li><Link href="/support" className="hover:opacity-80 transition-opacity" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Help Center</Link></li>
+                <li><Link href="/contact" className="hover:opacity-80 transition-opacity" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Contact Us</Link></li>
+              </ul>
+            </div>
+
+            {/* Newsletter Signup */}
+            <div>
+              <h4 className="text-xl font-bold mb-4">Stay Updated! 📬</h4>
+              <p className="mb-4" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                Get weekly learning tips and new content alerts!
+              </p>
+              <div className="space-y-3">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="w-full px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2"
+                  style={{ backgroundColor: '#FFFFFF', boxShadow: '0 0 0 2px rgba(75, 192, 200, 0.3)' }}
+                />
+                <button className="w-full px-4 py-3 rounded-lg font-semibold transition-all hover:scale-105" style={{ backgroundColor: '#FFD166', color: '#5C6B73' }}>
+                  Subscribe Free
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t pt-8 flex flex-col md:flex-row justify-between items-center" style={{ borderColor: 'rgba(255, 255, 255, 0.2)' }}>
+            <div className="flex space-x-6 mb-4 md:mb-0">
+              <Link href="/privacy" className="text-sm hover:opacity-80" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Privacy Policy</Link>
+              <Link href="/terms" className="text-sm hover:opacity-80" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Terms of Service</Link>
+              <Link href="/cookies" className="text-sm hover:opacity-80" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Cookie Policy</Link>
+            </div>
+            <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+              © 2025 AezCrib. Made with ❤️ for families everywhere.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

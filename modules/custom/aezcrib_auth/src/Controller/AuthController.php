@@ -158,7 +158,7 @@ class AuthController extends ControllerBase {
       $data = Json::decode($request->getContent());
       
       // Validate required fields
-      $required_fields = ['email', 'password', 'firstName', 'lastName', 'role'];
+      $required_fields = ['email', 'password', 'firstName', 'lastName', 'phoneNumber', 'role'];
       foreach ($required_fields as $field) {
         if (empty($data[$field])) {
           $response = new JsonResponse([
@@ -191,6 +191,7 @@ class AuthController extends ControllerBase {
         'mail' => $data['email'],
         'pass' => $data['password'],
         'status' => 1,
+        'field_phone_number' => $data['phoneNumber'],
       ]);
 
       $user->addRole($data['role']);

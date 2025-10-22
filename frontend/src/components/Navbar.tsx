@@ -112,12 +112,12 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/register"
-                  className={`px-4 py-2 rounded-md text-white transition-all duration-300 hover:opacity-90 hover:scale-105 hover:shadow-lg ${
+                  className={`px-4 py-2 rounded-md transition-all duration-300 hover:opacity-90 hover:scale-105 hover:shadow-lg ${
                     scrolled ? 'text-sm' : 'text-base'
                   }`}
-                  style={{ backgroundColor: '#FFD166' }}
+                  style={{ backgroundColor: '#FFD166', color: '#5C6B73' }}
                 >
-                  Register ✨
+                  Register 🚀
                 </Link>
               </div>
             )}
@@ -176,10 +176,10 @@ export default function Navbar() {
                   <Link
                     href="/register"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 py-2 rounded-md text-white transition-all duration-300 hover:opacity-90 hover:scale-105"
-                    style={{ backgroundColor: '#FFD166' }}
+                    className="block px-3 py-2 rounded-md transition-all duration-300 hover:opacity-90 hover:scale-105"
+                    style={{ backgroundColor: '#FFD166', color: '#5C6B73' }}
                   >
-                    Register ✨
+                    Register 🚀
                   </Link>
                 </>
               )}
