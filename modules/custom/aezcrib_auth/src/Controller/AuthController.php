@@ -52,7 +52,7 @@ class AuthController extends ControllerBase {
   /**
    * Add CORS headers to response.
    */
-  private function addCorsHeaders(Response $response) {
+  private function addCorsHeaders(Response $response, Request $request = null) {
     // Allow multiple origins for development and production
     $allowedOrigins = [
       'https://aezcrib.xyz',
@@ -60,20 +60,27 @@ class AuthController extends ControllerBase {
       'http://127.0.0.1:3000'
     ];
     
-    // Get the requesting origin
-    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    // Get the requesting origin from headers
+    $origin = '';
+    if ($request) {
+      $origin = $request->headers->get('Origin', '');
+    } else {
+      $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    }
     
     // Set the appropriate origin if it's in our allowed list
     if (in_array($origin, $allowedOrigins)) {
       $response->headers->set('Access-Control-Allow-Origin', $origin);
     } else {
-      // Default to production domain
+      // Default to production domain for CORS
       $response->headers->set('Access-Control-Allow-Origin', 'https://aezcrib.xyz');
     }
     
     $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-CSRF-Token');
     $response->headers->set('Access-Control-Allow-Credentials', 'true');
+    $response->headers->set('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
+    
     return $response;
   }
 
@@ -88,7 +95,7 @@ class AuthController extends ControllerBase {
         $response = new JsonResponse([
           'message' => 'Email and password are required',
         ], 400);
-        return $this->addCorsHeaders($response);
+        return $this->addCorsHeaders($response, $request);
       }
 
       // Authenticate user
@@ -98,7 +105,7 @@ class AuthController extends ControllerBase {
         $response = new JsonResponse([
           'message' => 'Invalid email or password',
         ], 401);
-        return $this->addCorsHeaders($response);
+        return $this->addCorsHeaders($response, $request);
       }
 
       $user = User::load($uid);
@@ -107,7 +114,7 @@ class AuthController extends ControllerBase {
         $response = new JsonResponse([
           'message' => 'Account is blocked or does not exist',
         ], 401);
-        return $this->addCorsHeaders($response);
+        return $this->addCorsHeaders($response, $request);
       }
 
       // Log in user to create session
@@ -133,13 +140,13 @@ class AuthController extends ControllerBase {
         'token' => session_id(), // Use session ID as token
       ]);
 
-      return $this->addCorsHeaders($response);
+      return $this->addCorsHeaders($response, $request);
 
     } catch (\Exception $e) {
       $response = new JsonResponse([
         'message' => 'An error occurred during login',
       ], 500);
-      return $this->addCorsHeaders($response);
+      return $this->addCorsHeaders($response, $request);
     }
   }
 
@@ -157,7 +164,7 @@ class AuthController extends ControllerBase {
           $response = new JsonResponse([
             'message' => ucfirst($field) . ' is required',
           ], 400);
-          return $this->addCorsHeaders($response);
+          return $this->addCorsHeaders($response, $request);
         }
       }
 
@@ -167,7 +174,7 @@ class AuthController extends ControllerBase {
         $response = new JsonResponse([
           'message' => 'An account with this email already exists',
         ], 400);
-        return $this->addCorsHeaders($response);
+        return $this->addCorsHeaders($response, $request);
       }
 
       // Validate role
@@ -175,7 +182,7 @@ class AuthController extends ControllerBase {
         $response = new JsonResponse([
           'message' => 'Invalid role selected',
         ], 400);
-        return $this->addCorsHeaders($response);
+        return $this->addCorsHeaders($response, $request);
       }
 
       // Create user
@@ -202,13 +209,13 @@ class AuthController extends ControllerBase {
         'token' => session_id(), // Use session ID as token
       ], 201);
 
-      return $this->addCorsHeaders($response);
+      return $this->addCorsHeaders($response, $request);
 
     } catch (\Exception $e) {
       $response = new JsonResponse([
         'message' => 'An error occurred during registration',
       ], 500);
-      return $this->addCorsHeaders($response);
+      return $this->addCorsHeaders($response, $request);
     }
   }
 
@@ -221,7 +228,7 @@ class AuthController extends ControllerBase {
     $response = new JsonResponse([
       'message' => 'Logged out successfully',
     ]);
-    return $this->addCorsHeaders($response);
+    return $this->addCorsHeaders($response, $request);
   }
 
   /**
@@ -232,7 +239,7 @@ class AuthController extends ControllerBase {
       $response = new JsonResponse([
         'message' => 'Not authenticated',
       ], 401);
-      return $this->addCorsHeaders($response);
+      return $this->addCorsHeaders($response, $request);
     }
 
     $user = User::load($this->currentUser->id());
@@ -241,7 +248,7 @@ class AuthController extends ControllerBase {
       $response = new JsonResponse([
         'message' => 'User not found',
       ], 404);
-      return $this->addCorsHeaders($response);
+      return $this->addCorsHeaders($response, $request);
     }
 
     // Get user role
@@ -263,7 +270,7 @@ class AuthController extends ControllerBase {
       ],
     ]);
 
-    return $this->addCorsHeaders($response);
+    return $this->addCorsHeaders($response, $request);
   }
 
   /**
@@ -271,6 +278,6 @@ class AuthController extends ControllerBase {
    */
   public function options(Request $request) {
     $response = new Response('', 200);
-    return $this->addCorsHeaders($response);
+    return $this->addCorsHeaders($response, $request);
   }
 }
