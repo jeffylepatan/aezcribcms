@@ -168,6 +168,8 @@ class AuthController extends ControllerBase {
           'email' => $user->getEmail(),
           'name' => $user->getDisplayName(),
           'role' => $custom_role,
+          'field_first_name' => $user->get('field_first_name')->value,
+          'field_last_name' => $user->get('field_last_name')->value,
         ],
         'token' => $token,
       ]);
