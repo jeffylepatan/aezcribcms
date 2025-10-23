@@ -160,28 +160,38 @@ class WorksheetController extends ControllerBase {
    * Purchase a worksheet with AezCoins.
    */
   public function purchaseWorksheet($worksheet_id, Request $request) {
+    $authHeader = $request->headers->get('Authorization');
     $user_id = $this->authenticateUser($request);
-    
+    $log_context = [
+      '@worksheet_id' => $worksheet_id,
+      '@auth_header' => $authHeader ? substr($authHeader, 0, 20) . '...' : 'none',
+      '@user_id' => $user_id,
+    ];
+
     if (!$user_id) {
+      \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: User not authenticated', $log_context);
       return new JsonResponse(['error' => 'User not authenticated'], 401);
     }
 
     // Validate worksheet ID
     if (!is_numeric($worksheet_id) || $worksheet_id <= 0) {
+      \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: Invalid worksheet ID', $log_context);
       return new JsonResponse(['error' => 'Invalid worksheet ID'], 400);
     }
 
     try {
+      $credits = $this->creditService->getUserCredits($user_id);
+      $log_context['@credits'] = $credits;
+      \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Attempting purchase', $log_context);
+
       $result = $this->purchaseService->purchaseWorksheet($user_id, $worksheet_id);
-      
+      $log_context['@purchase_result'] = json_encode($result);
       $status_code = $result['success'] ? 200 : 400;
-      
+      \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Purchase result', $log_context);
       return new JsonResponse($result, $status_code);
     } catch (\Exception $e) {
-      $this->getLogger('aezcrib_commerce')->error('Error purchasing worksheet: @error', [
-        '@error' => $e->getMessage(),
-      ]);
-      
+      $log_context['@error'] = $e->getMessage();
+      $this->getLogger('aezcrib_commerce')->error('Error purchasing worksheet: @error', $log_context);
       return new JsonResponse(['error' => 'An error occurred while processing your purchase'], 500);
     }
   }
