@@ -76,6 +76,21 @@ class CreditController extends ControllerBase {
   }
 
   /**
+   * Test endpoint to verify API connectivity.
+   */
+  public function test() {
+    $response = new JsonResponse([
+      'success' => TRUE,
+      'message' => 'AezCrib Commerce API is working!',
+      'timestamp' => date('Y-m-d H:i:s'),
+      'module' => 'aezcrib_commerce',
+      'version' => '1.0.0'
+    ]);
+
+    return $this->addCorsHeaders($response, \Drupal::request());
+  }
+
+  /**
    * Get user's current credit balance.
    */
   public function getCredits() {

@@ -1,3 +1,11 @@
+aezcrib_commerce.test:
+  path: '/api/aezcrib/test'
+  defaults:
+    _controller: '\Drupal\aezcrib_commerce\Controller\CreditController::test'
+  methods: [GET, OPTIONS]
+  requirements:
+    _access: 'TRUE'
+
 aezcrib_commerce.credits:
   path: '/api/aezcrib/credits'
   defaults:

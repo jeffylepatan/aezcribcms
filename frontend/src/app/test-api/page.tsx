@@ -12,7 +12,28 @@ export default function TestApiPage() {
     const testResults: any[] = [];
 
     try {
-      // Test 0: Check Auth Status
+      // Test 0: Commerce API Test (no auth required)
+      console.log('Testing commerce API connectivity...');
+      try {
+        const testResponse = await fetch('https://aezcrib.xyz/app/api/aezcrib/test', {
+          credentials: 'include',
+        });
+        testResults.push({
+          endpoint: 'GET /api/aezcrib/test',
+          success: testResponse.ok,
+          data: testResponse.ok ? await testResponse.json() : null,
+          error: testResponse.ok ? null : `HTTP ${testResponse.status}`
+        });
+      } catch (error) {
+        testResults.push({
+          endpoint: 'GET /api/aezcrib/test',
+          success: false,
+          data: null,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+
+      // Test 1: Check Auth Status
       console.log('Testing auth status...');
       try {
         const authResponse = await fetch('https://aezcrib.xyz/app/api/auth/me', {
