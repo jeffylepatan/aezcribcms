@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { 
   Coins, 
   Download, 
@@ -185,6 +186,74 @@ export default function DashboardPage() {
                 <Plus className="h-4 w-4" />
                 <span>Add Credits</span>
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Link
+              href="/worksheets"
+              className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-6 border border-white/20 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
+            >
+              <div className="flex items-center space-x-4">
+                <div 
+                  className="p-3 rounded-full group-hover:scale-110 transition-transform duration-300"
+                  style={{ backgroundColor: 'rgba(75, 192, 200, 0.2)' }}
+                >
+                  <BookOpen className="h-6 w-6" style={{ color: '#4BC0C8' }} />
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1" style={{ color: '#4BC0C8' }}>
+                    Browse Worksheets
+                  </h3>
+                  <p className="text-sm" style={{ color: '#5C6B73', opacity: 0.8 }}>
+                    Explore and purchase new worksheets
+                  </p>
+                </div>
+              </div>
+            </Link>
+
+            <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-6 border border-white/20">
+              <div className="flex items-center space-x-4">
+                <div 
+                  className="p-3 rounded-full"
+                  style={{ backgroundColor: 'rgba(255, 209, 102, 0.2)' }}
+                >
+                  <FileText className="h-6 w-6" style={{ color: '#FFD166' }} />
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1" style={{ color: '#4BC0C8' }}>
+                    My Library
+                  </h3>
+                  <p className="text-sm" style={{ color: '#5C6B73', opacity: 0.8 }}>
+                    {purchasedWorksheets.length} purchased worksheets
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-6 border border-white/20">
+              <div className="flex items-center space-x-4">
+                <div 
+                  className="p-3 rounded-full"
+                  style={{ backgroundColor: 'rgba(92, 107, 115, 0.1)' }}
+                >
+                  <Coins className="h-6 w-6" style={{ color: '#5C6B73' }} />
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1" style={{ color: '#4BC0C8' }}>
+                    Total Spent
+                  </h3>
+                  <p className="text-sm" style={{ color: '#5C6B73', opacity: 0.8 }}>
+                    {transactions
+                      .filter(t => t.type === 'worksheet_purchase')
+                      .reduce((sum, t) => sum + t.amount, 0)
+                      .toLocaleString()} AezCoins
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
