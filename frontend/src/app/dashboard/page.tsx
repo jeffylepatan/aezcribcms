@@ -1,9 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { 
+  commerceService, 
+  UserWorksheet, 
+  Transaction as ApiTransaction, 
+  Recommendation 
+} from '@/services/commerceService';
 import { 
   Coins, 
   Download, 
@@ -23,48 +29,18 @@ import {
   LogOut
 } from 'lucide-react';
 
-interface PurchasedWorksheet {
-  id: number;
-  title: string;
-  subject: string;
-  gradeLevel: string;
-  purchaseDate: string;
-  price: number;
-  downloadUrl: string;
-  thumbnail?: string;
-}
-
-interface Transaction {
-  id: number;
-  type: 'credit_purchase' | 'worksheet_purchase';
-  amount: number;
-  description: string;
-  date: string;
-  status: 'completed' | 'pending' | 'failed';
-}
-
-interface RecommendedWorksheet {
-  id: number;
-  title: string;
-  subject: string;
-  gradeLevel: string;
-  price: number;
-  rating: number;
-  popularity: number;
-  thumbnail?: string;
-}
-
 export default function DashboardPage() {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
   const [credits, setCredits] = useState(0);
-  const [purchasedWorksheets, setPurchasedWorksheets] = useState<PurchasedWorksheet[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [recommendations, setRecommendations] = useState<RecommendedWorksheet[]>([]);
+  const [purchasedWorksheets, setPurchasedWorksheets] = useState<UserWorksheet[]>([]);
+  const [transactions, setTransactions] = useState<ApiTransaction[]>([]);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSubject, setFilterSubject] = useState('all');
   const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -78,24 +54,78 @@ export default function DashboardPage() {
     }
   }, [user]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
-      // TODO: Replace with actual API calls
-      // Fetch user credits from field_credits
+      setDashboardLoading(true);
+      setError(null); // Clear any previous errors
+      
+      // Fetch user credits
+      const creditsResponse = await commerceService.getCredits();
+      if (creditsResponse.success) {
+        setCredits(creditsResponse.credits);
+      }
+
       // Fetch purchased worksheets
+      const worksheetsResponse = await commerceService.getUserWorksheets();
+      if (worksheetsResponse.success) {
+        setPurchasedWorksheets(worksheetsResponse.worksheets);
+      }
+
       // Fetch transaction history
-      // Fetch recommendations based on purchase history
+      const transactionsResponse = await commerceService.getTransactions();
+      if (transactionsResponse.success) {
+        setTransactions(transactionsResponse.transactions);
+      }
+
+      // Fetch recommendations
+      const recommendationsResponse = await commerceService.getRecommendations();
+      if (recommendationsResponse.success) {
+        setRecommendations(recommendationsResponse.recommendations);
+      }
       
       setDashboardLoading(false);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load dashboard data');
       setDashboardLoading(false);
     }
-  };
+  }, []);
 
   const handleLogout = async () => {
     await logout();
     router.push('/');
+  };
+
+  const handleAddCredits = () => {
+    // For now, we'll show an alert with instructions
+    // In the future, this could open a modal or navigate to a donation page
+    alert(`To add AezCoins:
+    
+1. Send money via GCash to [Your GCash Number]
+2. Take a screenshot of the receipt
+3. Contact support with your receipt
+4. Credits will be added manually within 24 hours
+
+Conversion Rate: ₱1 = 10 AezCoins`);
+  };
+
+  const handleDownloadWorksheet = async (worksheetId: number, title: string) => {
+    try {
+      const blob = await commerceService.downloadWorksheet(worksheetId);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${title}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('Failed to download worksheet. Please try again.');
+    }
   };
 
   if (loading || dashboardLoading) {
@@ -113,6 +143,34 @@ export default function DashboardPage() {
 
   if (!isAuthenticated || !user) {
     return null;
+  }
+
+  // Show error state if API connection failed
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 pt-20">
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center max-w-md">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              <strong className="font-bold">API Connection Error!</strong>
+              <span className="block sm:inline"> {error}</span>
+            </div>
+            <p className="text-gray-600 mb-4">
+              This usually means the Drupal commerce module isn't installed or accessible yet.
+            </p>
+            <button
+              onClick={() => {
+                setError(null);
+                fetchDashboardData();
+              }}
+              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const filteredWorksheets = purchasedWorksheets.filter(worksheet => {
@@ -200,6 +258,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <button
+                onClick={handleAddCredits}
                 className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:opacity-90 hover:scale-105"
                 style={{ backgroundColor: '#FFD166', color: '#5C6B73' }}
               >
@@ -433,6 +492,7 @@ export default function DashboardPage() {
                           </div>
                         </div>
                         <button
+                          onClick={() => handleDownloadWorksheet(worksheet.id, worksheet.title)}
                           className="w-full flex items-center justify-center space-x-2 py-2 px-4 rounded-lg font-medium transition-all duration-300 hover:opacity-90 hover:scale-105"
                           style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
                         >

@@ -57,7 +57,9 @@ class AuthController extends ControllerBase {
     $allowedOrigins = [
       'https://aezcrib.xyz',
       'http://localhost:3000',
-      'http://127.0.0.1:3000'
+      'http://localhost:3001',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001'
     ];
     
     // Get the requesting origin from headers

@@ -7,6 +7,7 @@ use Drupal\aezcrib_commerce\Service\CreditService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Drupal\Component\Serialization\Json;
 
 /**
@@ -38,22 +39,62 @@ class CreditController extends ControllerBase {
   }
 
   /**
+   * Add CORS headers to response.
+   */
+  private function addCorsHeaders(Response $response, Request $request = null) {
+    // Allow multiple origins for development and production
+    $allowedOrigins = [
+      'https://aezcrib.xyz',
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001'
+    ];
+    
+    // Get the requesting origin from headers
+    $origin = '';
+    if ($request) {
+      $origin = $request->headers->get('Origin', '');
+    } else {
+      $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    }
+    
+    // Set the appropriate origin if it's in our allowed list
+    if (in_array($origin, $allowedOrigins)) {
+      $response->headers->set('Access-Control-Allow-Origin', $origin);
+    } else {
+      // Default to production domain for CORS
+      $response->headers->set('Access-Control-Allow-Origin', 'https://aezcrib.xyz');
+    }
+    
+    $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-CSRF-Token');
+    $response->headers->set('Access-Control-Allow-Credentials', 'true');
+    $response->headers->set('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
+    
+    return $response;
+  }
+
+  /**
    * Get user's current credit balance.
    */
   public function getCredits() {
     $user_id = $this->currentUser()->id();
     
     if (!$user_id) {
-      return new JsonResponse(['error' => 'User not authenticated'], 401);
+      $response = new JsonResponse(['error' => 'User not authenticated'], 401);
+      return $this->addCorsHeaders($response, \Drupal::request());
     }
 
     $credits = $this->creditService->getUserCredits($user_id);
 
-    return new JsonResponse([
+    $response = new JsonResponse([
       'success' => TRUE,
       'credits' => $credits,
       'user_id' => $user_id,
     ]);
+
+    return $this->addCorsHeaders($response, \Drupal::request());
   }
 
   /**
