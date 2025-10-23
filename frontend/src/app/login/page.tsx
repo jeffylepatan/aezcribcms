@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+// import { z } from 'zod';
+import { useForm as useRHForm } from 'react-hook-form';
+import { zodResolver as zodRHResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useForm } from 'react-hook-form';
@@ -18,10 +21,27 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
+const resetSchema = z.object({ email: z.string().email('Please enter a valid email address') });
+
+type ResetFormData = z.infer<typeof resetSchema>;
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState<string | null>(null);
+  const [resetError, setResetError] = useState<string | null>(null);
+
+  const {
+    register: registerReset,
+    handleSubmit: handleResetSubmit,
+    formState: { errors: resetErrors },
+    reset: resetResetForm,
+  } = useRHForm<ResetFormData>({
+    resolver: zodRHResolver(resetSchema),
+  });
   const router = useRouter();
   const { login } = useAuth();
 
@@ -44,6 +64,33 @@ export default function LoginPage() {
       setApiError(error.message || 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Password reset handler
+  const handlePasswordReset = async (data: ResetFormData) => {
+    setResetLoading(true);
+    setResetError(null);
+    setResetSuccess(null);
+    try {
+      // Drupal expects POST to /app/user/password with email
+      const res = await fetch('https://aezcrib.xyz/app/user/password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: data.email }),
+      });
+      if (res.ok) {
+        setResetSuccess('If your email exists, you will receive a password reset link.');
+        resetResetForm();
+      } else {
+        setResetError('Failed to send reset request. Please try again.');
+      }
+    } catch (err) {
+      setResetError('Network error. Please try again.');
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -143,11 +190,69 @@ export default function LoginPage() {
 
               <div className="flex items-center justify-between">
                 <div className="text-sm">
-                  <a href="#" className="font-medium hover:opacity-80 transition-opacity" style={{ color: '#4BC0C8' }}>
+                  <button
+                    type="button"
+                    className="font-medium hover:opacity-80 transition-opacity"
+                    style={{ color: '#4BC0C8', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                    onClick={() => setShowResetModal(true)}
+                  >
                     Forgot your password?
-                  </a>
+                  </button>
                 </div>
               </div>
+
+              {/* Password Reset Modal */}
+              {showResetModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                  <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm relative">
+                    <button
+                      className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                      onClick={() => {
+                        setShowResetModal(false);
+                        setResetError(null);
+                        setResetSuccess(null);
+                        resetResetForm();
+                      }}
+                      aria-label="Close"
+                    >
+                      ×
+                    </button>
+                    <h3 className="text-lg font-semibold mb-2" style={{ color: '#4BC0C8' }}>Reset Password</h3>
+                    <form onSubmit={handleResetSubmit(handlePasswordReset)} className="space-y-4">
+                      <div>
+                        <label htmlFor="resetEmail" className="block text-sm font-medium" style={{ color: '#5C6B73' }}>
+                          Enter your email address
+                        </label>
+                        <input
+                          {...registerReset('email')}
+                          id="resetEmail"
+                          type="email"
+                          className="appearance-none block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 sm:text-sm transition-colors placeholder-gray-400 bg-white"
+                          style={{ borderColor: '#D9F7F4', color: '#5C6B73' }}
+                          placeholder="your@email.com"
+                        />
+                        {resetErrors.email && (
+                          <p className="mt-1 text-sm" style={{ color: '#FFD166' }}>{resetErrors.email.message}</p>
+                        )}
+                      </div>
+                      {resetError && (
+                        <p className="text-sm mb-2" style={{ color: '#FFD166' }}>{resetError}</p>
+                      )}
+                      {resetSuccess && (
+                        <p className="text-sm mb-2" style={{ color: '#4BC0C8' }}>{resetSuccess}</p>
+                      )}
+                      <button
+                        type="submit"
+                        disabled={resetLoading}
+                        className="w-full py-2 px-4 rounded-md text-white font-semibold transition-all"
+                        style={{ backgroundColor: '#4BC0C8' }}
+                      >
+                        {resetLoading ? 'Sending...' : 'Send Reset Link'}
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <button
