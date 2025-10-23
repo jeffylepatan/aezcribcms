@@ -129,38 +129,25 @@ class AuthController extends ControllerBase {
 
       // Generate or get session token
       $token = session_id();
-      
+      // Log the raw token value to dblog
+      \Drupal::logger('aezcrib_auth')->notice('Session token generated: @token for user @uid', [
+        '@token' => $token,
+        '@uid' => $user->id(),
+      ]);
+
       // If no session ID, generate one manually
       if (empty($token)) {
         $token = \Drupal::csrfToken()->get(time() . $user->id());
+        \Drupal::logger('aezcrib_auth')->notice('Fallback CSRF token generated: @token for user @uid', [
+          '@token' => $token,
+          '@uid' => $user->id(),
+        ]);
       }
 
       // Get user role - handle both singular and plural versions
       $roles = $user->getRoles();
       $custom_role = 'parent'; // default
-      
-      // Check for roles in order of priority, handling both singular and plural
-      $role_mapping = [
-        'creator' => 'creator',
-        'creators' => 'creator',
-        'educator' => 'educator', 
-        'educators' => 'educator',
-        'parent' => 'parent',
-        'parents' => 'parent'
-      ];
-      
-      foreach ($role_mapping as $drupal_role => $api_role) {
-        if (in_array($drupal_role, $roles)) {
-          $custom_role = $api_role;
-          break;
-        }
-      }
-
-      // Log token generation for debugging
-      \Drupal::logger('aezcrib_auth')->info('Login token generated: @token for user @uid', [
-        '@token' => $token,
-        '@uid' => $user->id(),
-      ]);
+      // ...existing code...
 
       $response = new JsonResponse([
         'user' => [
