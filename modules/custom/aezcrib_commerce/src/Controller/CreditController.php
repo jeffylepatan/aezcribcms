@@ -158,12 +158,21 @@ class CreditController extends ControllerBase {
     
     // 1. Check if it's a session ID
     $database = \Drupal::database();
+    // Log session lookup attempt
+    \Drupal::logger('aezcrib_commerce')->notice('Looking up session for token: @token', ['@token' => $token]);
     $query = $database->select('sessions', 's')
-      ->fields('s', ['uid'])
+      ->fields('s', ['sid', 'uid', 'timestamp'])
       ->condition('sid', $token)
       ->condition('timestamp', \Drupal::time()->getRequestTime() - 86400, '>'); // Active within 24 hours
-    
-    $user_id = $query->execute()->fetchField();
+    $result = $query->execute()->fetchAll();
+    foreach ($result as $row) {
+      \Drupal::logger('aezcrib_commerce')->notice('Session match: sid=@sid, uid=@uid, timestamp=@ts', [
+        '@sid' => $row['sid'],
+        '@uid' => $row['uid'],
+        '@ts' => $row['timestamp'],
+      ]);
+    }
+    $user_id = count($result) > 0 ? $result[0]['uid'] : null;
     if ($user_id && $user_id > 0) {
       return $user_id;
     }

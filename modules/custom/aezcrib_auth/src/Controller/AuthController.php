@@ -140,6 +140,20 @@ class AuthController extends ControllerBase {
             '@uid' => $user->id(),
           ]);
         }
+          // Log session table contents for debugging
+          $database = \Drupal::database();
+          $result = $database->select('sessions', 's')
+            ->fields('s', ['sid', 'uid', 'timestamp'])
+            ->orderBy('timestamp', 'DESC')
+            ->range(0, 5)
+            ->execute();
+          foreach ($result as $row) {
+            \Drupal::logger('aezcrib_auth')->notice('Session table: sid=@sid, uid=@uid, timestamp=@ts', [
+              '@sid' => $row['sid'],
+              '@uid' => $row['uid'],
+              '@ts' => $row['timestamp'],
+            ]);
+          }
 
       // Get user role - handle both singular and plural versions
       $roles = $user->getRoles();
@@ -238,6 +252,20 @@ class AuthController extends ControllerBase {
           '@uid' => $user->id(),
         ]);
       }
+        // Log session table contents for debugging
+        $database = \Drupal::database();
+        $result = $database->select('sessions', 's')
+          ->fields('s', ['sid', 'uid', 'timestamp'])
+          ->orderBy('timestamp', 'DESC')
+          ->range(0, 5)
+          ->execute();
+        foreach ($result as $row) {
+          \Drupal::logger('aezcrib_auth')->notice('Session table: sid=@sid, uid=@uid, timestamp=@ts', [
+            '@sid' => $row['sid'],
+            '@uid' => $row['uid'],
+            '@ts' => $row['timestamp'],
+          ]);
+        }
 
       $response = new JsonResponse([
         'user' => [
