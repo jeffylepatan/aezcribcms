@@ -15,7 +15,9 @@ const registerSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
-  phoneNumber: z.string().min(10, 'Please enter a valid phone number').regex(/^[\+]?[1-9][\d]{0,15}$/, 'Please enter a valid phone number'),
+  phoneNumber: z.string()
+    .length(10, 'Enter 10 digits (e.g. 9123456789)')
+    .regex(/^9\d{9}$/, 'Must start with 9 and be 10 digits (e.g. 9123456789)'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string(),
   role: z.enum(['parent'], {
@@ -32,7 +34,7 @@ const roles = [
   {
     value: 'parent',
     label: 'Parent',
-    description: 'Support your child\'s educational journey with engaging worksheets and videos',
+    description: 'Support your child\'s educational journey with fun and engaging worksheets',
     icon: Users,
     color: 'green',
   },
@@ -62,7 +64,11 @@ export default function RegisterPage() {
     setApiError(null);
 
     try {
-      await registerUser(data);
+      const formattedData = {
+        ...data,
+        phoneNumber: `+63${data.phoneNumber}`,
+      };
+      await registerUser(formattedData);
       router.push('/dashboard');
     } catch (error: any) {
       setApiError(error.message || 'Registration failed. Please try again.');
@@ -250,23 +256,28 @@ export default function RegisterPage() {
               {/* Phone Number */}
               <div>
                 <label htmlFor="phoneNumber" className="block text-sm font-medium" style={{ color: '#5C6B73' }}>
-                  Phone number
+                  Phone number <span className="text-xs text-gray-500">(Philippines only)</span>
                 </label>
-                <div className="mt-1">
+                <div className="mt-1 flex items-center">
+                  <span className="px-2 py-2 border rounded-l-md bg-gray-100 text-gray-600 select-none" style={{ borderColor: '#D9F7F4' }}>+63</span>
                   <input
                     {...register('phoneNumber')}
                     type="tel"
                     autoComplete="tel"
-                    className="appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:border-transparent sm:text-sm"
+                    className="appearance-none block w-full px-3 py-2 border rounded-r-md placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:border-transparent sm:text-sm"
                     style={{ borderColor: '#D9F7F4', color: '#5C6B73' }}
-                    placeholder="Enter your phone number"
+                    placeholder="9123456789"
+                    maxLength={10}
+                    pattern="9[0-9]{9}"
+                    inputMode="numeric"
                     onFocus={(e) => e.target.style.borderColor = '#4BC0C8'}
                     onBlur={(e) => e.target.style.borderColor = '#D9F7F4'}
                   />
-                  {errors.phoneNumber && (
-                    <p className="mt-1 text-sm" style={{ color: '#FFD166' }}>{errors.phoneNumber.message}</p>
-                  )}
                 </div>
+                <p className="mt-1 text-xs text-gray-500">Enter your 10-digit mobile number (e.g. 9123456789). No spaces or dashes.</p>
+                {errors.phoneNumber && (
+                  <p className="mt-1 text-sm" style={{ color: '#FFD166' }}>{errors.phoneNumber.message}</p>
+                )}
               </div>
 
               {/* Password Fields */}
