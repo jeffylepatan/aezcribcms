@@ -27,14 +27,16 @@ api.interceptors.response.use(
 
 export class AuthService {
   private static readonly USER_KEY = 'user_data';
+  private static readonly TOKEN_KEY = 'auth_token';
 
   static async login(credentials: LoginCredentials): Promise<User> {
     try {
       const response = await api.post<AuthResponse>('/api/auth/login', credentials);
-      const { user } = response.data;
+      const { user, token } = response.data;
       
-      // Store user data
+      // Store user data and token
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+      localStorage.setItem(this.TOKEN_KEY, token);
       
       return user;
     } catch (error: any) {
@@ -45,10 +47,11 @@ export class AuthService {
   static async register(data: RegisterData): Promise<User> {
     try {
       const response = await api.post<AuthResponse>('/api/auth/register', data);
-      const { user } = response.data;
+      const { user, token } = response.data;
       
-      // Auto-login after registration
+      // Auto-login after registration - store user data and token
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+      localStorage.setItem(this.TOKEN_KEY, token);
       
       return user;
     } catch (error: any) {
@@ -64,6 +67,7 @@ export class AuthService {
       console.error('Logout API call failed:', error);
     } finally {
       localStorage.removeItem(this.USER_KEY);
+      localStorage.removeItem(this.TOKEN_KEY);
     }
   }
 
@@ -89,8 +93,12 @@ export class AuthService {
     }
   }
 
+  static getToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
   static isAuthenticated(): boolean {
-    return !!this.getStoredUser();
+    return !!this.getStoredUser() && !!this.getToken();
   }
 
   private static handleError(error: any): ApiError {

@@ -37,13 +37,19 @@ export default function TestApiPage() {
       console.log('Testing auth status...');
       try {
         const authResponse = await fetch('https://aezcrib.xyz/app/api/auth/me', {
+          method: 'GET',
           credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Origin': 'http://localhost:3000'
+          }
         });
+        const authData = authResponse.ok ? await authResponse.json() : null;
         testResults.push({
           endpoint: 'GET /api/auth/me',
           success: authResponse.ok,
-          data: authResponse.ok ? await authResponse.json() : null,
-          error: authResponse.ok ? null : `HTTP ${authResponse.status}`
+          data: authData,
+          error: authResponse.ok ? null : `HTTP ${authResponse.status} - ${authData?.message || 'Authentication required'}`
         });
       } catch (error) {
         testResults.push({

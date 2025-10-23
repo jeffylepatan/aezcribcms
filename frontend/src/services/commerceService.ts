@@ -1,3 +1,5 @@
+import { AuthService } from './auth';
+
 interface CreditResponse {
   success: boolean;
   credits: number;
@@ -95,9 +97,13 @@ class CommerceService {
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
+    // Get the auth token
+    const token = AuthService.getToken();
+    
     const defaultOptions: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
       },
       credentials: 'include',
     };
