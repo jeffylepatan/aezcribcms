@@ -220,24 +220,24 @@ class AuthController extends ControllerBase {
       // Auto-login after registration
       user_login_finalize($user);
 
-      // Ensure we have a session started
-      if (session_status() == PHP_SESSION_NONE) {
+      // Ensure we have a session started and get session token
+      if (session_status() !== PHP_SESSION_ACTIVE) {
         session_start();
       }
-
-      // Generate or get session token
       $token = session_id();
-      
       // If no session ID, generate one manually
       if (empty($token)) {
         $token = \Drupal::csrfToken()->get(time() . $user->id());
+        \Drupal::logger('aezcrib_auth')->notice('Fallback CSRF token generated: @token for user @uid', [
+          '@token' => $token,
+          '@uid' => $user->id(),
+        ]);
+      } else {
+        \Drupal::logger('aezcrib_auth')->notice('Session token generated: @token for user @uid', [
+          '@token' => $token,
+          '@uid' => $user->id(),
+        ]);
       }
-
-      // Log token generation for debugging
-      \Drupal::logger('aezcrib_auth')->info('Registration token generated: @token for user @uid', [
-        '@token' => $token,
-        '@uid' => $user->id(),
-      ]);
 
       $response = new JsonResponse([
         'user' => [
