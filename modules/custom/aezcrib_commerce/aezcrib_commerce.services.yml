@@ -10,3 +10,8 @@ services:
   aezcrib_commerce.recommendation_service:
     class: Drupal\aezcrib_commerce\Service\RecommendationService
     arguments: ['@entity_type.manager', '@database']
+
+  aezcrib_commerce.api_access_check:
+    class: Drupal\aezcrib_commerce\Access\CommerceApiAccessCheck
+    tags:
+      - { name: access_check, applies_to: _commerce_api_access }
