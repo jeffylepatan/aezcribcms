@@ -84,21 +84,21 @@ class AuthController extends ControllerBase {
     $response->headers->set('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
 
     // Explicitly set session cookie if available
-    if (session_status() === PHP_SESSION_ACTIVE && !headers_sent()) {
-      $sessionName = session_name();
-      $sessionId = session_id();
-      if ($sessionName && $sessionId) {
-        // Set-Cookie header for PHP session
-        $cookieParams = session_get_cookie_params();
-        $cookie = $sessionName . '=' . $sessionId .
-          '; Path=' . $cookieParams['path'] .
-          ($cookieParams['domain'] ? '; Domain=' . $cookieParams['domain'] : '') .
-          ($cookieParams['secure'] ? '; Secure' : '') .
-          ($cookieParams['httponly'] ? '; HttpOnly' : '') .
-          '; SameSite=None';
-        $response->headers->set('Set-Cookie', $cookie, false);
-      }
-    }
+    // if (session_status() === PHP_SESSION_ACTIVE && !headers_sent()) {
+    //   $sessionName = session_name();
+    //   $sessionId = session_id();
+    //   if ($sessionName && $sessionId) {
+    //     // Set-Cookie header for PHP session
+    //     $cookieParams = session_get_cookie_params();
+    //     $cookie = $sessionName . '=' . $sessionId .
+    //       '; Path=' . $cookieParams['path'] .
+    //       ($cookieParams['domain'] ? '; Domain=' . $cookieParams['domain'] : '') .
+    //       ($cookieParams['secure'] ? '; Secure' : '') .
+    //       ($cookieParams['httponly'] ? '; HttpOnly' : '') .
+    //       '; SameSite=None';
+    //     $response->headers->set('Set-Cookie', $cookie, false);
+    //   }
+    // }
 
     return $response;
   }
