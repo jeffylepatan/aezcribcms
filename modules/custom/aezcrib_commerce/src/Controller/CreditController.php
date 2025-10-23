@@ -94,22 +94,32 @@ class CreditController extends ControllerBase {
    * Get user's current credit balance.
    */
   public function getCredits(Request $request) {
-    // Try token-based authentication first, then fall back to session
+    $authHeader = $request->headers->get('Authorization');
+    $method = $request->getMethod();
+    $allHeaders = $request->headers->all();
     $user_id = $this->authenticateUser($request);
-    
+    $log_context = [
+      '@auth_header' => $authHeader ? substr($authHeader, 0, 40) : 'none',
+      '@user_id' => $user_id,
+      '@method' => $method,
+      '@headers' => json_encode($allHeaders),
+    ];
+    \Drupal::logger('aezcrib_commerce')->info('getCredits: Request received', $log_context);
+
     if (!$user_id) {
+      \Drupal::logger('aezcrib_commerce')->warning('getCredits: User not authenticated', $log_context);
       $response = new JsonResponse(['error' => 'User not authenticated'], 401);
       return $this->addCorsHeaders($response, $request);
     }
 
     $credits = $this->creditService->getUserCredits($user_id);
-
+    $log_context['@credits'] = $credits;
+    \Drupal::logger('aezcrib_commerce')->info('getCredits: User credits', $log_context);
     $response = new JsonResponse([
       'success' => TRUE,
       'credits' => $credits,
       'user_id' => $user_id,
     ]);
-
     return $this->addCorsHeaders($response, $request);
   }
 
