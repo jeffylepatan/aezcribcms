@@ -246,7 +246,12 @@ Conversion Rate: ₱1 = 10 AezCoins`);
                   className="p-3 rounded-full"
                   style={{ backgroundColor: '#FFD166' }}
                 >
-                  <Coins className="h-8 w-8" style={{ color: '#5C6B73' }} />
+                  <img
+                    src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png"
+                    alt="AezCoins"
+                    className="h-8 w-8"
+                    style={{ display: 'block' }}
+                  />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold" style={{ color: '#4BC0C8' }}>
@@ -319,7 +324,12 @@ Conversion Rate: ₱1 = 10 AezCoins`);
                   className="p-3 rounded-full"
                   style={{ backgroundColor: 'rgba(92, 107, 115, 0.1)' }}
                 >
-                  <Coins className="h-6 w-6" style={{ color: '#5C6B73' }} />
+                  <img
+                    src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png"
+                    alt="AezCoins"
+                    className="h-6 w-6"
+                    style={{ display: 'block' }}
+                  />
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1" style={{ color: '#4BC0C8' }}>
@@ -407,7 +417,12 @@ Conversion Rate: ₱1 = 10 AezCoins`);
 
               <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-6 border border-white/20">
                 <div className="flex items-center space-x-3">
-                  <Coins className="h-8 w-8" style={{ color: '#FFD166' }} />
+                    <img
+                      src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png"
+                      alt="AezCoins"
+                      className="h-8 w-8"
+                      style={{ display: 'block' }}
+                    />
                   <div>
                     <h3 className="text-2xl font-bold" style={{ color: '#5C6B73' }}>
                       {transactions
