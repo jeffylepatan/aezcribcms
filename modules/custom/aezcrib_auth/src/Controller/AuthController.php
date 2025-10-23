@@ -122,12 +122,11 @@ class AuthController extends ControllerBase {
       // Log in user to create session
       user_login_finalize($user);
 
-        // Ensure we have a session started and get session token
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-          session_start();
-        }
-        $token = session_id();
-        // If no session ID, generate one manually
+        // Use Drupal's session manager to get the correct session ID
+        $session_manager = \Drupal::service('session_manager');
+        $token = $session_manager->getId();
+        // Force session save to DB
+        \Drupal::service('session_manager')->save();
         if (empty($token)) {
           $token = \Drupal::csrfToken()->get(time() . $user->id());
           \Drupal::logger('aezcrib_auth')->notice('Fallback CSRF token generated: @token for user @uid', [
