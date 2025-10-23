@@ -485,11 +485,41 @@ export default function WorksheetsPage() {
                             </a>
                           ) : (
                             <button
-                              onClick={() => {
+                              onClick={async () => {
                                 if (!isAuthenticated) {
                                   window.location.href = '/login';
-                                } else {
-                                  alert('Purchase functionality coming soon!');
+                                  return;
+                                }
+                                try {
+                                  // Fetch current user credits
+                                  const creditsRes = await fetch('https://aezcrib.xyz/app/api/aezcrib/credits', {
+                                    method: 'GET',
+                                    credentials: 'include',
+                                    headers: { 'Content-Type': 'application/json' },
+                                  });
+                                  const creditsData = await creditsRes.json();
+                                  const userCredits = creditsData.credits ?? 0;
+                                  const worksheetPrice = parseFloat(worksheet.price);
+                                  if (userCredits < worksheetPrice) {
+                                    alert('Insufficient AezCoins. Please add more credits to purchase this worksheet.');
+                                    return;
+                                  }
+                                  // Call purchase API
+                                  const purchaseRes = await fetch(`https://aezcrib.xyz/app/api/aezcrib/purchase/worksheet/${worksheet.name}`, {
+                                    method: 'POST',
+                                    credentials: 'include',
+                                    headers: { 'Content-Type': 'application/json' },
+                                  });
+                                  const purchaseData = await purchaseRes.json();
+                                  if (!purchaseData.success) {
+                                    alert(purchaseData.error || 'Purchase failed.');
+                                    return;
+                                  }
+                                  // Deduct credits and update worksheet ownership (handled by backend)
+                                  alert('Purchase successful! The worksheet has been added to your library and your credits have been updated.');
+                                  window.location.reload();
+                                } catch (err) {
+                                  alert('An error occurred during purchase. Please try again.');
                                 }
                               }}
                               className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105 shadow-md"

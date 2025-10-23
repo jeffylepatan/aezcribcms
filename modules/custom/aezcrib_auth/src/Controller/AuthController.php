@@ -61,7 +61,7 @@ class AuthController extends ControllerBase {
       'http://127.0.0.1:3000',
       'http://127.0.0.1:3001'
     ];
-    
+
     // Get the requesting origin from headers
     $origin = '';
     if ($request) {
@@ -69,7 +69,7 @@ class AuthController extends ControllerBase {
     } else {
       $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
     }
-    
+
     // Set the appropriate origin if it's in our allowed list
     if (in_array($origin, $allowedOrigins)) {
       $response->headers->set('Access-Control-Allow-Origin', $origin);
@@ -77,12 +77,29 @@ class AuthController extends ControllerBase {
       // Default to production domain for CORS
       $response->headers->set('Access-Control-Allow-Origin', 'https://aezcrib.xyz');
     }
-    
+
     $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-CSRF-Token');
     $response->headers->set('Access-Control-Allow-Credentials', 'true');
     $response->headers->set('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
-    
+
+    // Explicitly set session cookie if available
+    if (session_status() === PHP_SESSION_ACTIVE && !headers_sent()) {
+      $sessionName = session_name();
+      $sessionId = session_id();
+      if ($sessionName && $sessionId) {
+        // Set-Cookie header for PHP session
+        $cookieParams = session_get_cookie_params();
+        $cookie = $sessionName . '=' . $sessionId .
+          '; Path=' . $cookieParams['path'] .
+          ($cookieParams['domain'] ? '; Domain=' . $cookieParams['domain'] : '') .
+          ($cookieParams['secure'] ? '; Secure' : '') .
+          ($cookieParams['httponly'] ? '; HttpOnly' : '') .
+          '; SameSite=None';
+        $response->headers->set('Set-Cookie', $cookie, false);
+      }
+    }
+
     return $response;
   }
 
