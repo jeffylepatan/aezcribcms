@@ -123,20 +123,43 @@ class CreditController extends ControllerBase {
       $token = $matches[1];
       
       // Log token received for debugging
-      \Drupal::logger('aezcrib_commerce')->info('Received token: @token', ['@token' => $token]);
+      \Drupal::logger('aezcrib_commerce')->info('Received token: @token', ['@token' => substr($token, 0, 10) . '...']);
       
-      // Validate token (try session first, then CSRF token)
+      // Try to validate as session token first
       $user_id = $this->getUserIdFromSessionToken($token);
       if ($user_id) {
         \Drupal::logger('aezcrib_commerce')->info('Token validated via session: user @uid', ['@uid' => $user_id]);
         return $user_id;
       }
       
-      // Try to validate as CSRF token by checking current user
+      // Try to validate as CSRF token
       $current_user = $this->currentUser();
       if ($current_user->isAuthenticated()) {
-        \Drupal::logger('aezcrib_commerce')->info('Token validated via current session: user @uid', ['@uid' => $current_user->id()]);
+        $csrf_token = \Drupal::csrfToken();
+        // Try different CSRF token patterns
+        $csrf_patterns = [
+          $token,
+          $current_user->id() . ':' . $token,
+          time() . $current_user->id()
+        ];
+        
+        foreach ($csrf_patterns as $pattern) {
+          if ($csrf_token->validate($pattern)) {
+            \Drupal::logger('aezcrib_commerce')->info('Token validated via CSRF pattern: user @uid', ['@uid' => $current_user->id()]);
+            return $current_user->id();
+          }
+        }
+        
+        // Since user is authenticated, allow access even if CSRF validation fails
+        \Drupal::logger('aezcrib_commerce')->info('User authenticated, allowing access despite CSRF validation failure: user @uid', ['@uid' => $current_user->id()]);
         return $current_user->id();
+      }
+      
+      // Try alternative token validation - check if it's a session ID directly
+      $session_user_id = $this->validateAlternativeToken($token);
+      if ($session_user_id) {
+        \Drupal::logger('aezcrib_commerce')->info('Token validated via alternative method: user @uid', ['@uid' => $session_user_id]);
+        return $session_user_id;
       }
     }
     
@@ -147,7 +170,34 @@ class CreditController extends ControllerBase {
       return $current_user->id();
     }
     
-    \Drupal::logger('aezcrib_commerce')->warning('Authentication failed for request');
+    \Drupal::logger('aezcrib_commerce')->warning('Authentication failed for request from @ip', ['@ip' => $request->getClientIp()]);
+    return null;
+  }
+
+  /**
+   * Alternative token validation method.
+   */
+  private function validateAlternativeToken($token) {
+    // Check if the token exists in session storage
+    $database = \Drupal::database();
+    
+    // Try to find session with this token as session ID
+    $query = $database->select('sessions', 's')
+      ->fields('s', ['uid', 'hostname', 'timestamp'])
+      ->condition('sid', $token)
+      ->condition('timestamp', \Drupal::time()->getRequestTime() - 2592000, '>'); // 30 days
+    
+    $result = $query->execute()->fetchAssoc();
+    
+    if ($result && $result['uid'] > 0) {
+      \Drupal::logger('aezcrib_commerce')->info('Alternative token validation successful: found user @uid from @host at @time', [
+        '@uid' => $result['uid'],
+        '@host' => $result['hostname'],
+        '@time' => date('Y-m-d H:i:s', $result['timestamp'])
+      ]);
+      return $result['uid'];
+    }
+    
     return null;
   }
 
