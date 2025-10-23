@@ -95,14 +95,10 @@ class CreditController extends ControllerBase {
    */
   public function getCredits(Request $request) {
     $authHeader = $request->headers->get('Authorization');
-    $cookieHeader = $request->headers->get('Cookie');
-    $userAgent = $request->headers->get('User-Agent');
     $method = $request->getMethod();
     $user_id = $this->authenticateUser($request);
     $log_context = [
       '@auth_header' => $authHeader ? substr($authHeader, 0, 40) : 'none',
-      '@cookie' => $cookieHeader ? substr($cookieHeader, 0, 40) : 'none',
-      '@user_agent' => $userAgent ? substr($userAgent, 0, 40) : 'none',
       '@user_id' => $user_id,
       '@method' => $method,
     ];
@@ -115,8 +111,7 @@ class CreditController extends ControllerBase {
     }
 
     $credits = $this->creditService->getUserCredits($user_id);
-    $log_context['@credits'] = $credits;
-    \Drupal::logger('aezcrib_commerce')->info('getCredits: User credits', $log_context);
+    \Drupal::logger('aezcrib_commerce')->info('getCredits: User credits', ['@user_id' => $user_id, '@credits' => $credits]);
     $response = new JsonResponse([
       'success' => TRUE,
       'credits' => $credits,
