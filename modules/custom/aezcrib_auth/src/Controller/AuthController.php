@@ -149,9 +149,9 @@ class AuthController extends ControllerBase {
             ->execute();
           foreach ($result as $row) {
             \Drupal::logger('aezcrib_auth')->notice('Session table: sid=@sid, uid=@uid, timestamp=@ts', [
-              '@sid' => $row['sid'],
-              '@uid' => $row['uid'],
-              '@ts' => $row['timestamp'],
+              '@sid' => $row->sid,
+              '@uid' => $row->uid,
+              '@ts' => $row->timestamp,
             ]);
           }
 
