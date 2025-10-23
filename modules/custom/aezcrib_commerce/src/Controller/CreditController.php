@@ -41,7 +41,7 @@ class CreditController extends ControllerBase {
   /**
    * Add CORS headers to response.
    */
-  private function addCorsHeaders(Response $response, Request $request = null) {
+  private function addCorsHeaders(Response $response, ?Request $request = null) {
     // Allow multiple origins for development and production
     $allowedOrigins = [
       'https://aezcrib.xyz',
