@@ -98,9 +98,9 @@ class CreditController extends ControllerBase {
     $method = $request->getMethod();
     $user_id = $this->authenticateUser($request);
     $log_context = [
-      '@auth_header' => $authHeader ? substr($authHeader, 0, 40) : 'none',
-      '@user_id' => $user_id,
-      '@method' => $method,
+      '@auth_header' => is_string($authHeader) ? substr($authHeader, 0, 40) : 'none',
+      '@user_id' => isset($user_id) && $user_id !== null ? (string)$user_id : 'none',
+      '@method' => is_string($method) ? $method : 'none',
     ];
     \Drupal::logger('aezcrib_commerce')->info('getCredits: Request received', $log_context);
 
@@ -111,7 +111,10 @@ class CreditController extends ControllerBase {
     }
 
     $credits = $this->creditService->getUserCredits($user_id);
-    \Drupal::logger('aezcrib_commerce')->info('getCredits: User credits', ['@user_id' => $user_id, '@credits' => $credits]);
+    \Drupal::logger('aezcrib_commerce')->info('getCredits: User credits', [
+      '@user_id' => (string)$user_id,
+      '@credits' => isset($credits) ? (string)$credits : 'none',
+    ]);
     $response = new JsonResponse([
       'success' => TRUE,
       'credits' => $credits,
