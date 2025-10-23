@@ -66,12 +66,39 @@ export default function Navbar() {
               }`} 
               style={{ color: '#4BC0C8' }}
             >
-              🎓 AezCrib
+              🌟 AezCrib
             </Link>
           </div>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Navigation Links */}
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/worksheets"
+                className={`px-3 py-2 rounded-md transition-all duration-300 hover:opacity-80 hover:scale-105 ${
+                  scrolled ? 'text-sm' : 'text-base'
+                }`}
+                style={{ color: '#5C6B73' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#D9F7F4')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+              >
+                📚 Worksheets
+              </Link>
+              <Link
+                href="/videos"
+                className={`px-3 py-2 rounded-md transition-all duration-300 hover:opacity-80 hover:scale-105 ${
+                  scrolled ? 'text-sm' : 'text-base'
+                }`}
+                style={{ color: '#5C6B73' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#D9F7F4')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+              >
+                🎥 Videos
+              </Link>
+            </div>
+
+            {/* Authentication Section */}
             {isAuthenticated ? (
               <>
                 <div className={`flex items-center space-x-2 transition-all duration-300 ${
@@ -147,6 +174,32 @@ export default function Navbar() {
               className="px-2 pt-2 pb-3 space-y-1 sm:px-3 backdrop-blur-sm" 
               style={{ backgroundColor: 'rgba(217, 247, 244, 0.95)' }}
             >
+              {/* Navigation Links */}
+              <Link
+                href="/worksheets"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-md transition-all duration-300 hover:opacity-80 hover:scale-105"
+                style={{ color: '#5C6B73' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#FFFFFF')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+              >
+                📚 Worksheets
+              </Link>
+              <Link
+                href="/videos"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-md transition-all duration-300 hover:opacity-80 hover:scale-105"
+                style={{ color: '#5C6B73' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#FFFFFF')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+              >
+                🎥 Videos
+              </Link>
+              
+              {/* Divider */}
+              <div className="border-t my-2" style={{ borderColor: 'rgba(75, 192, 200, 0.3)' }}></div>
+              
+              {/* Authentication Section */}
               {isAuthenticated ? (
                 <>
                   <div className="px-3 py-2" style={{ color: '#5C6B73' }}>
