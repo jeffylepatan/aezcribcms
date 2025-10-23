@@ -1,0 +1,4 @@
+use commerce api:
+  title: 'Use Commerce API'
+  description: 'Allows users to access AezCrib commerce API endpoints for credits, purchases, and transactions.'
+  restrict access: false
