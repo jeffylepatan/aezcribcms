@@ -456,15 +456,33 @@ export default function Home() {
                             />
                             <span className="font-semibold">{worksheet.price}</span>
                           </div>
-                          <a
-                            href={`https://aezcrib.xyz${worksheet.worksheet}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105"
-                            style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
-                          >
-                            Download
-                          </a>
+                          {parseFloat(worksheet.price) === 0 ? (
+                            <a
+                              href={`https://aezcrib.xyz${worksheet.worksheet}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105"
+                              style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
+                            >
+                              Download
+                            </a>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                if (!isAuthenticated) {
+                                  // Redirect to login if not authenticated
+                                  window.location.href = '/login';
+                                } else {
+                                  // Handle purchase logic here
+                                  alert('Purchase functionality coming soon!');
+                                }
+                              }}
+                              className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105"
+                              style={{ backgroundColor: '#FFD166', color: '#5C6B73' }}
+                            >
+                              Buy
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -567,15 +585,19 @@ export default function Home() {
                         </p>
                         <div className="flex items-center justify-between mt-auto">
                           <div className="flex items-center text-sm" style={{ color: '#5C6B73' }}>
-                            <Play className="w-4 h-4 mr-1" />
-                            Watch Video
+                            {video.field_video_views && (
+                              <>
+                                <Play className="w-4 h-4 mr-1" />
+                                {video.field_video_views} views
+                              </>
+                            )}
                           </div>
                           <button
                             onClick={() => openVideoModal(video)}
                             className="px-3 py-1 rounded-lg text-sm font-semibold transition-all hover:scale-105"
                             style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
                           >
-                            Play
+                            Watch Video
                           </button>
                         </div>
                       </div>
