@@ -12,7 +12,7 @@ aezcrib_commerce.credits:
     _controller: '\Drupal\aezcrib_commerce\Controller\CreditController::getCredits'
   methods: [GET]
   requirements:
-    _user_is_logged_in: 'TRUE'
+    _permission: 'access content'
 
 aezcrib_commerce.add_credits:
   path: '/api/aezcrib/credits/add'
@@ -20,7 +20,7 @@ aezcrib_commerce.add_credits:
     _controller: '\Drupal\aezcrib_commerce\Controller\CreditController::addCredits'
   methods: [POST]
   requirements:
-    _user_is_logged_in: 'TRUE'
+    _permission: 'access content'
 
 aezcrib_commerce.credit_rates:
   path: '/api/aezcrib/credits/rates'
@@ -34,7 +34,7 @@ aezcrib_commerce.user_worksheets:
     _controller: '\Drupal\aezcrib_commerce\Controller\WorksheetController::getUserWorksheets'
   methods: [GET]
   requirements:
-    _user_is_logged_in: 'TRUE'
+    _permission: 'access content'
 
 aezcrib_commerce.purchase_worksheet:
   path: '/api/aezcrib/purchase/worksheet/{worksheet_id}'
@@ -42,7 +42,7 @@ aezcrib_commerce.purchase_worksheet:
     _controller: '\Drupal\aezcrib_commerce\Controller\WorksheetController::purchaseWorksheet'
   methods: [POST]
   requirements:
-    _user_is_logged_in: 'TRUE'
+    _permission: 'access content'
     worksheet_id: '\d+'
 
 aezcrib_commerce.check_purchase_eligibility:
@@ -51,7 +51,7 @@ aezcrib_commerce.check_purchase_eligibility:
     _controller: '\Drupal\aezcrib_commerce\Controller\WorksheetController::checkPurchaseEligibility'
   methods: [GET]
   requirements:
-    _user_is_logged_in: 'TRUE'
+    _permission: 'access content'
     worksheet_id: '\d+'
 
 aezcrib_commerce.download_worksheet:
@@ -60,7 +60,7 @@ aezcrib_commerce.download_worksheet:
     _controller: '\Drupal\aezcrib_commerce\Controller\WorksheetController::downloadWorksheet'
   methods: [GET]
   requirements:
-    _user_is_logged_in: 'TRUE'
+    _permission: 'access content'
     worksheet_id: '\d+'
 
 aezcrib_commerce.transactions:
@@ -69,7 +69,7 @@ aezcrib_commerce.transactions:
     _controller: '\Drupal\aezcrib_commerce\Controller\TransactionController::getUserTransactions'
   methods: [GET]
   requirements:
-    _user_is_logged_in: 'TRUE'
+    _permission: 'access content'
 
 aezcrib_commerce.transaction_stats:
   path: '/api/aezcrib/user/stats'
@@ -77,7 +77,7 @@ aezcrib_commerce.transaction_stats:
     _controller: '\Drupal\aezcrib_commerce\Controller\TransactionController::getTransactionStats'
   methods: [GET]
   requirements:
-    _user_is_logged_in: 'TRUE'
+    _permission: 'access content'
 
 aezcrib_commerce.recommendations:
   path: '/api/aezcrib/recommendations'
@@ -85,7 +85,7 @@ aezcrib_commerce.recommendations:
     _controller: '\Drupal\aezcrib_commerce\Controller\RecommendationController::getRecommendations'
   methods: [GET]
   requirements:
-    _user_is_logged_in: 'TRUE'
+    _permission: 'access content'
 
 aezcrib_commerce.popular:
   path: '/api/aezcrib/popular'

@@ -99,6 +99,11 @@ class CommerceService {
     
     // Get the auth token
     const token = AuthService.getToken();
+    console.log('Making commerce API request:', { 
+      endpoint, 
+      hasToken: !!token,
+      token: token ? token.substring(0, 8) + '...' : 'NONE'
+    });
     
     const defaultOptions: RequestInit = {
       headers: {

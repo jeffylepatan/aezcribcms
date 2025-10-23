@@ -34,12 +34,15 @@ export class AuthService {
       const response = await api.post<AuthResponse>('/api/auth/login', credentials);
       const { user, token } = response.data;
       
+      console.log('Login successful:', { user, token: token ? '***TOKEN***' : 'NO_TOKEN' });
+      
       // Store user data and token
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
       localStorage.setItem(this.TOKEN_KEY, token);
       
       return user;
     } catch (error: any) {
+      console.error('Login failed:', error);
       throw this.handleError(error);
     }
   }

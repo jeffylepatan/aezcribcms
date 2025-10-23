@@ -122,12 +122,23 @@ class AuthController extends ControllerBase {
       // Log in user to create session
       user_login_finalize($user);
 
-      // Get user role
+      // Get user role - handle both singular and plural versions
       $roles = $user->getRoles();
       $custom_role = 'parent'; // default
-      foreach (['creator', 'educator', 'parent'] as $role) {
-        if (in_array($role, $roles)) {
-          $custom_role = $role;
+      
+      // Check for roles in order of priority, handling both singular and plural
+      $role_mapping = [
+        'creator' => 'creator',
+        'creators' => 'creator',
+        'educator' => 'educator', 
+        'educators' => 'educator',
+        'parent' => 'parent',
+        'parents' => 'parent'
+      ];
+      
+      foreach ($role_mapping as $drupal_role => $api_role) {
+        if (in_array($drupal_role, $roles)) {
+          $custom_role = $api_role;
           break;
         }
       }
