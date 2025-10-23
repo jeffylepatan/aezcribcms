@@ -216,7 +216,7 @@ export default function Home() {
                       className="px-10 py-5 rounded-xl font-bold text-lg transition-all transform hover:scale-105"
                       style={{ backgroundColor: '#FFFFFF', color: '#4BC0C8', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
                     >
-                      Start Learning Today! 🚀
+                      Start Transitioning Today! 🚀
                     </Link>
                     <Link
                       href="#showcase"
