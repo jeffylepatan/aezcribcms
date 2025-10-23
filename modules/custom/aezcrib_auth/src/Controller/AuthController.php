@@ -122,6 +122,19 @@ class AuthController extends ControllerBase {
       // Log in user to create session
       user_login_finalize($user);
 
+      // Ensure we have a session started
+      if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+      }
+
+      // Generate or get session token
+      $token = session_id();
+      
+      // If no session ID, generate one manually
+      if (empty($token)) {
+        $token = \Drupal::csrfToken()->get(time() . $user->id());
+      }
+
       // Get user role - handle both singular and plural versions
       $roles = $user->getRoles();
       $custom_role = 'parent'; // default
@@ -143,6 +156,12 @@ class AuthController extends ControllerBase {
         }
       }
 
+      // Log token generation for debugging
+      \Drupal::logger('aezcrib_auth')->info('Login token generated: @token for user @uid', [
+        '@token' => $token,
+        '@uid' => $user->id(),
+      ]);
+
       $response = new JsonResponse([
         'user' => [
           'id' => $user->id(),
@@ -150,7 +169,7 @@ class AuthController extends ControllerBase {
           'name' => $user->getDisplayName(),
           'role' => $custom_role,
         ],
-        'token' => session_id(), // Use session ID as token
+        'token' => $token,
       ]);
 
       return $this->addCorsHeaders($response, $request);
@@ -213,6 +232,25 @@ class AuthController extends ControllerBase {
       // Auto-login after registration
       user_login_finalize($user);
 
+      // Ensure we have a session started
+      if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+      }
+
+      // Generate or get session token
+      $token = session_id();
+      
+      // If no session ID, generate one manually
+      if (empty($token)) {
+        $token = \Drupal::csrfToken()->get(time() . $user->id());
+      }
+
+      // Log token generation for debugging
+      \Drupal::logger('aezcrib_auth')->info('Registration token generated: @token for user @uid', [
+        '@token' => $token,
+        '@uid' => $user->id(),
+      ]);
+
       $response = new JsonResponse([
         'user' => [
           'id' => $user->id(),
@@ -220,7 +258,7 @@ class AuthController extends ControllerBase {
           'name' => $data['firstName'] . ' ' . $data['lastName'],
           'role' => $data['role'],
         ],
-        'token' => session_id(), // Use session ID as token
+        'token' => $token,
       ], 201);
 
       return $this->addCorsHeaders($response, $request);

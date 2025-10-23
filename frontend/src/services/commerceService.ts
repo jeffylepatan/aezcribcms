@@ -114,12 +114,28 @@ class CommerceService {
     };
 
     try {
+      console.log('Making API request to:', url);
+      console.log('Request options:', {
+        method: options.method || 'GET',
+        headers: { ...defaultOptions.headers, ...options.headers },
+        credentials: defaultOptions.credentials
+      });
+      
       const response = await fetch(url, { ...defaultOptions, ...options });
+      
+      console.log('API Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
       
       if (!response.ok) {
         // If it's a 404, the API might not be available yet
         if (response.status === 404) {
           throw new Error(`API endpoint not found: ${endpoint}. Make sure the commerce module is installed on the Drupal site.`);
+        }
+        if (response.status === 403) {
+          throw new Error(`Access denied (403): User may not have permission or authentication failed for ${endpoint}`);
         }
         throw new Error(`HTTP error! status: ${response.status}`);
       }

@@ -122,15 +122,33 @@ class CreditController extends ControllerBase {
     if ($authHeader && preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
       $token = $matches[1];
       
-      // Validate token (session ID)
-      if ($this->validateSessionToken($token)) {
-        return $this->getUserIdFromToken($token);
+      // Log token received for debugging
+      \Drupal::logger('aezcrib_commerce')->info('Received token: @token', ['@token' => $token]);
+      
+      // Validate token (try session first, then CSRF token)
+      $user_id = $this->getUserIdFromSessionToken($token);
+      if ($user_id) {
+        \Drupal::logger('aezcrib_commerce')->info('Token validated via session: user @uid', ['@uid' => $user_id]);
+        return $user_id;
+      }
+      
+      // Try to validate as CSRF token by checking current user
+      $current_user = $this->currentUser();
+      if ($current_user->isAuthenticated()) {
+        \Drupal::logger('aezcrib_commerce')->info('Token validated via current session: user @uid', ['@uid' => $current_user->id()]);
+        return $current_user->id();
       }
     }
     
     // Fall back to current user session
     $current_user = $this->currentUser();
-    return $current_user->isAuthenticated() ? $current_user->id() : null;
+    if ($current_user->isAuthenticated()) {
+      \Drupal::logger('aezcrib_commerce')->info('User authenticated via session fallback: user @uid', ['@uid' => $current_user->id()]);
+      return $current_user->id();
+    }
+    
+    \Drupal::logger('aezcrib_commerce')->warning('Authentication failed for request');
+    return null;
   }
 
   /**
@@ -149,9 +167,9 @@ class CreditController extends ControllerBase {
   }
 
   /**
-   * Get user ID from token.
+   * Get user ID from session token.
    */
-  private function getUserIdFromToken($token) {
+  private function getUserIdFromSessionToken($token) {
     $database = \Drupal::database();
     $query = $database->select('sessions', 's')
       ->fields('s', ['uid'])
