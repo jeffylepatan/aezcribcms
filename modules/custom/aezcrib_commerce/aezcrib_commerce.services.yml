@@ -1,0 +1,12 @@
+services:
+  aezcrib_commerce.credit_service:
+    class: Drupal\aezcrib_commerce\Service\CreditService
+    arguments: ['@entity_type.manager', '@current_user', '@logger.factory']
+
+  aezcrib_commerce.purchase_service:
+    class: Drupal\aezcrib_commerce\Service\PurchaseService
+    arguments: ['@entity_type.manager', '@current_user', '@logger.factory', '@aezcrib_commerce.credit_service']
+
+  aezcrib_commerce.recommendation_service:
+    class: Drupal\aezcrib_commerce\Service\RecommendationService
+    arguments: ['@entity_type.manager', '@database']

@@ -1,0 +1,276 @@
+<?php
+
+/**
+ * @file
+ * Main module file for AezCrib Commerce.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\node\NodeInterface;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_entity_presave().
+ * 
+ * Automatically set the user reference field when creating transactions.
+ */
+function aezcrib_commerce_entity_presave(EntityInterface $entity) {
+  if ($entity instanceof NodeInterface) {
+    $bundle = $entity->bundle();
+    
+    if (in_array($bundle, ['credit_transaction', 'purchase_transaction'])) {
+      // If user reference is not set, set it to current user
+      if ($entity->hasField('field_user_reference') && $entity->get('field_user_reference')->isEmpty()) {
+        $current_user = \Drupal::currentUser();
+        if ($current_user->isAuthenticated()) {
+          $entity->set('field_user_reference', $current_user->id());
+        }
+      }
+      
+      // Set the author to the referenced user
+      if ($entity->hasField('field_user_reference') && !$entity->get('field_user_reference')->isEmpty()) {
+        $referenced_user_id = $entity->get('field_user_reference')->target_id;
+        $entity->setOwnerId($referenced_user_id);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for node entities.
+ * 
+ * Process completed credit transactions.
+ */
+function aezcrib_commerce_node_insert(NodeInterface $node) {
+  if ($node->bundle() === 'credit_transaction') {
+    $status = $node->get('field_transaction_status')->value;
+    
+    if ($status === 'completed') {
+      _aezcrib_commerce_process_credit_transaction($node);
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for node entities.
+ * 
+ * Process credit transactions when status changes to completed.
+ */
+function aezcrib_commerce_node_update(NodeInterface $node) {
+  if ($node->bundle() === 'credit_transaction') {
+    $new_status = $node->get('field_transaction_status')->value;
+    $original_status = $node->original->get('field_transaction_status')->value;
+    
+    // If status changed from non-completed to completed
+    if ($new_status === 'completed' && $original_status !== 'completed') {
+      _aezcrib_commerce_process_credit_transaction($node);
+    }
+  }
+}
+
+/**
+ * Process a completed credit transaction by adding credits to user account.
+ */
+function _aezcrib_commerce_process_credit_transaction(NodeInterface $transaction_node) {
+  $user_id = $transaction_node->get('field_user_reference')->target_id;
+  $amount = $transaction_node->get('field_transaction_amount')->value;
+  
+  if ($user_id && $amount > 0) {
+    $user = \Drupal::entityTypeManager()->getStorage('user')->load($user_id);
+    
+    if ($user && $user instanceof UserInterface) {
+      $current_credits = $user->get('field_credits')->value ?? 0;
+      $new_credits = $current_credits + $amount;
+      
+      $user->set('field_credits', $new_credits);
+      $user->save();
+      
+      // Log the transaction
+      \Drupal::logger('aezcrib_commerce')->info(
+        'Added @amount AezCoins to user @user (ID: @uid). New balance: @balance',
+        [
+          '@amount' => $amount,
+          '@user' => $user->getAccountName(),
+          '@uid' => $user_id,
+          '@balance' => $new_credits,
+        ]
+      );
+    }
+  }
+}
+
+/**
+ * Get user's current AezCoins balance.
+ */
+function aezcrib_commerce_get_user_credits($user_id = NULL) {
+  if (!$user_id) {
+    $user_id = \Drupal::currentUser()->id();
+  }
+  
+  if (!$user_id) {
+    return 0;
+  }
+  
+  $user = \Drupal::entityTypeManager()->getStorage('user')->load($user_id);
+  
+  if ($user && $user instanceof UserInterface) {
+    return (int) ($user->get('field_credits')->value ?? 0);
+  }
+  
+  return 0;
+}
+
+/**
+ * Deduct credits from user account for worksheet purchase.
+ */
+function aezcrib_commerce_deduct_credits($user_id, $amount) {
+  $user = \Drupal::entityTypeManager()->getStorage('user')->load($user_id);
+  
+  if (!$user || !($user instanceof UserInterface)) {
+    return FALSE;
+  }
+  
+  $current_credits = (int) ($user->get('field_credits')->value ?? 0);
+  
+  if ($current_credits < $amount) {
+    return FALSE; // Insufficient credits
+  }
+  
+  $new_credits = $current_credits - $amount;
+  $user->set('field_credits', $new_credits);
+  $user->save();
+  
+  return TRUE;
+}
+
+/**
+ * Check if user has already purchased a specific worksheet.
+ */
+function aezcrib_commerce_user_owns_worksheet($user_id, $worksheet_nid) {
+  $query = \Drupal::entityQuery('node')
+    ->condition('type', 'purchase_transaction')
+    ->condition('field_user_reference', $user_id)
+    ->condition('field_worksheet_reference', $worksheet_nid)
+    ->condition('field_purchase_status', 'completed')
+    ->accessCheck(FALSE);
+  
+  $results = $query->execute();
+  
+  return !empty($results);
+}
+
+/**
+ * Get all worksheets purchased by a user.
+ */
+function aezcrib_commerce_get_user_purchased_worksheets($user_id) {
+  $query = \Drupal::entityQuery('node')
+    ->condition('type', 'purchase_transaction')
+    ->condition('field_user_reference', $user_id)
+    ->condition('field_purchase_status', 'completed')
+    ->sort('created', 'DESC')
+    ->accessCheck(FALSE);
+  
+  $transaction_nids = $query->execute();
+  
+  if (empty($transaction_nids)) {
+    return [];
+  }
+  
+  $transactions = \Drupal::entityTypeManager()
+    ->getStorage('node')
+    ->loadMultiple($transaction_nids);
+  
+  $worksheets = [];
+  foreach ($transactions as $transaction) {
+    $worksheet_nid = $transaction->get('field_worksheet_reference')->target_id;
+    if ($worksheet_nid) {
+      $worksheet = \Drupal::entityTypeManager()
+        ->getStorage('node')
+        ->load($worksheet_nid);
+      
+      if ($worksheet) {
+        $worksheets[] = [
+          'worksheet' => $worksheet,
+          'purchase_date' => $transaction->getCreatedTime(),
+          'amount_paid' => $transaction->get('field_purchase_amount')->value,
+        ];
+      }
+    }
+  }
+  
+  return $worksheets;
+}
+
+/**
+ * Get user's transaction history.
+ */
+function aezcrib_commerce_get_user_transactions($user_id, $limit = 50) {
+  $transactions = [];
+  
+  // Get credit transactions
+  $credit_query = \Drupal::entityQuery('node')
+    ->condition('type', 'credit_transaction')
+    ->condition('field_user_reference', $user_id)
+    ->sort('created', 'DESC')
+    ->range(0, $limit)
+    ->accessCheck(FALSE);
+  
+  $credit_nids = $credit_query->execute();
+  
+  if (!empty($credit_nids)) {
+    $credit_transactions = \Drupal::entityTypeManager()
+      ->getStorage('node')
+      ->loadMultiple($credit_nids);
+    
+    foreach ($credit_transactions as $transaction) {
+      $transactions[] = [
+        'type' => 'credit_purchase',
+        'id' => $transaction->id(),
+        'amount' => $transaction->get('field_transaction_amount')->value,
+        'description' => 'AezCoins Purchase - ' . $transaction->get('field_payment_method')->value,
+        'date' => $transaction->getCreatedTime(),
+        'status' => $transaction->get('field_transaction_status')->value,
+        'real_amount' => $transaction->get('field_real_money_amount')->value,
+      ];
+    }
+  }
+  
+  // Get purchase transactions
+  $purchase_query = \Drupal::entityQuery('node')
+    ->condition('type', 'purchase_transaction')
+    ->condition('field_user_reference', $user_id)
+    ->sort('created', 'DESC')
+    ->range(0, $limit)
+    ->accessCheck(FALSE);
+  
+  $purchase_nids = $purchase_query->execute();
+  
+  if (!empty($purchase_nids)) {
+    $purchase_transactions = \Drupal::entityTypeManager()
+      ->getStorage('node')
+      ->loadMultiple($purchase_nids);
+    
+    foreach ($purchase_transactions as $transaction) {
+      $worksheet_nid = $transaction->get('field_worksheet_reference')->target_id;
+      $worksheet = $worksheet_nid ? \Drupal::entityTypeManager()->getStorage('node')->load($worksheet_nid) : NULL;
+      $worksheet_title = $worksheet ? $worksheet->getTitle() : 'Unknown Worksheet';
+      
+      $transactions[] = [
+        'type' => 'worksheet_purchase',
+        'id' => $transaction->id(),
+        'amount' => $transaction->get('field_purchase_amount')->value,
+        'description' => 'Worksheet Purchase - ' . $worksheet_title,
+        'date' => $transaction->getCreatedTime(),
+        'status' => $transaction->get('field_purchase_status')->value,
+        'worksheet' => $worksheet,
+      ];
+    }
+  }
+  
+  // Sort by date descending
+  usort($transactions, function ($a, $b) {
+    return $b['date'] - $a['date'];
+  });
+  
+  return array_slice($transactions, 0, $limit);
+}

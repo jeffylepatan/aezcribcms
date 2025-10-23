@@ -1,0 +1,86 @@
+aezcrib_commerce.credits:
+  path: '/api/aezcrib/credits'
+  defaults:
+    _controller: '\Drupal\aezcrib_commerce\Controller\CreditController::getCredits'
+  methods: [GET]
+  requirements:
+    _user_is_logged_in: 'TRUE'
+
+aezcrib_commerce.add_credits:
+  path: '/api/aezcrib/credits/add'
+  defaults:
+    _controller: '\Drupal\aezcrib_commerce\Controller\CreditController::addCredits'
+  methods: [POST]
+  requirements:
+    _user_is_logged_in: 'TRUE'
+
+aezcrib_commerce.credit_rates:
+  path: '/api/aezcrib/credits/rates'
+  defaults:
+    _controller: '\Drupal\aezcrib_commerce\Controller\CreditController::getRates'
+  methods: [GET]
+
+aezcrib_commerce.user_worksheets:
+  path: '/api/aezcrib/user/worksheets'
+  defaults:
+    _controller: '\Drupal\aezcrib_commerce\Controller\WorksheetController::getUserWorksheets'
+  methods: [GET]
+  requirements:
+    _user_is_logged_in: 'TRUE'
+
+aezcrib_commerce.purchase_worksheet:
+  path: '/api/aezcrib/purchase/worksheet/{worksheet_id}'
+  defaults:
+    _controller: '\Drupal\aezcrib_commerce\Controller\WorksheetController::purchaseWorksheet'
+  methods: [POST]
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    worksheet_id: '\d+'
+
+aezcrib_commerce.check_purchase_eligibility:
+  path: '/api/aezcrib/purchase/check/{worksheet_id}'
+  defaults:
+    _controller: '\Drupal\aezcrib_commerce\Controller\WorksheetController::checkPurchaseEligibility'
+  methods: [GET]
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    worksheet_id: '\d+'
+
+aezcrib_commerce.download_worksheet:
+  path: '/api/aezcrib/download/worksheet/{worksheet_id}'
+  defaults:
+    _controller: '\Drupal\aezcrib_commerce\Controller\WorksheetController::downloadWorksheet'
+  methods: [GET]
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    worksheet_id: '\d+'
+
+aezcrib_commerce.transactions:
+  path: '/api/aezcrib/user/transactions'
+  defaults:
+    _controller: '\Drupal\aezcrib_commerce\Controller\TransactionController::getUserTransactions'
+  methods: [GET]
+  requirements:
+    _user_is_logged_in: 'TRUE'
+
+aezcrib_commerce.transaction_stats:
+  path: '/api/aezcrib/user/stats'
+  defaults:
+    _controller: '\Drupal\aezcrib_commerce\Controller\TransactionController::getTransactionStats'
+  methods: [GET]
+  requirements:
+    _user_is_logged_in: 'TRUE'
+
+aezcrib_commerce.recommendations:
+  path: '/api/aezcrib/recommendations'
+  defaults:
+    _controller: '\Drupal\aezcrib_commerce\Controller\RecommendationController::getRecommendations'
+  methods: [GET]
+  requirements:
+    _user_is_logged_in: 'TRUE'
+
+aezcrib_commerce.popular:
+  path: '/api/aezcrib/popular'
+  defaults:
+    _controller: '\Drupal\aezcrib_commerce\Controller\RecommendationController::getPopular'
+  methods: [GET]

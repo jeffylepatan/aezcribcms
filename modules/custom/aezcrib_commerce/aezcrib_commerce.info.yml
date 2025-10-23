@@ -1,0 +1,13 @@
+name: AezCrib Commerce
+type: module
+description: 'AezCoins donation and worksheet purchase system for AezCrib platform'
+core_version_requirement: ^10 || ^11
+package: AezCrib
+dependencies:
+  - drupal:user
+  - drupal:node
+  - drupal:field
+  - drupal:file
+  - drupal:image
+  - drupal:rest
+  - drupal:serialization
