@@ -100,17 +100,21 @@ export default function Navbar() {
 
             {/* Authentication Section */}
             {isAuthenticated ? (
-              <>
-                <div className={`flex items-center space-x-2 transition-all duration-300 ${
-                  scrolled ? 'text-sm' : 'text-base'
-                }`}>
+              <div className="flex items-center space-x-2">
+                <Link
+                  href="/dashboard"
+                  className={`flex items-center space-x-1 px-3 py-2 rounded-md transition-all duration-300 hover:opacity-80 hover:scale-105 ${
+                    scrolled ? 'text-sm' : 'text-base'
+                  }`}
+                  style={{ color: '#5C6B73', backgroundColor: 'transparent' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#D9F7F4')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
                   <User className={`transition-all duration-300 ${
-                    scrolled ? 'h-4 w-4' : 'h-5 w-5'
-                  }`} style={{ color: '#5C6B73' }} />
-                  <span style={{ color: '#5C6B73' }}>
-                    {user?.name} ({user?.role})
-                  </span>
-                </div>
+                    scrolled ? 'h-3 w-3' : 'h-4 w-4'
+                  }`} />
+                  <span>Dashboard</span>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className={`flex items-center space-x-1 px-3 py-2 rounded-md transition-all duration-300 hover:opacity-80 hover:scale-105 ${
@@ -125,7 +129,7 @@ export default function Navbar() {
                   }`} />
                   <span>Logout</span>
                 </button>
-              </>
+              </div>
             ) : (
               <div className="flex items-center space-x-4">
                 <Link
@@ -202,9 +206,17 @@ export default function Navbar() {
               {/* Authentication Section */}
               {isAuthenticated ? (
                 <>
-                  <div className="px-3 py-2" style={{ color: '#5C6B73' }}>
-                    {user?.name} ({user?.role})
-                  </div>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center space-x-2 w-full text-left px-3 py-2 rounded-md transition-all duration-300 hover:opacity-80 hover:scale-105"
+                    style={{ color: '#5C6B73' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#FFFFFF')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                  >
+                    <User className="h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="flex items-center space-x-1 w-full text-left px-3 py-2 rounded-md transition-all duration-300 hover:opacity-80 hover:scale-105"
