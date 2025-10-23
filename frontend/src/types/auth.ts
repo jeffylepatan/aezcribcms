@@ -2,6 +2,10 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
+  field_first_name?: string;
+  field_last_name?: string;
   role: 'parent' | 'educator' | 'creator';
   subscription?: {
     type: string;

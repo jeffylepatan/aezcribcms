@@ -33,14 +33,17 @@ export class AuthService {
     try {
       const response = await api.post<AuthResponse>('/api/auth/login', credentials);
       const { user, token } = response.data;
-      
-      console.log('Login successful:', { user, token: token ? '***TOKEN***' : 'NO_TOKEN' });
-      
+      // Map custom fields from Drupal
+      const mappedUser = {
+        ...user,
+        firstName: user.field_first_name || user.firstName,
+        lastName: user.field_last_name || user.lastName,
+      };
+      console.log('Login successful:', { mappedUser, token: token ? '***TOKEN***' : 'NO_TOKEN' });
       // Store user data and token
-      localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+      localStorage.setItem(this.USER_KEY, JSON.stringify(mappedUser));
       localStorage.setItem(this.TOKEN_KEY, token);
-      
-      return user;
+      return mappedUser;
     } catch (error: any) {
       console.error('Login failed:', error);
       throw this.handleError(error);
@@ -51,12 +54,16 @@ export class AuthService {
     try {
       const response = await api.post<AuthResponse>('/api/auth/register', data);
       const { user, token } = response.data;
-      
+      // Map custom fields from Drupal
+      const mappedUser = {
+        ...user,
+        firstName: user.field_first_name || user.firstName,
+        lastName: user.field_last_name || user.lastName,
+      };
       // Auto-login after registration - store user data and token
-      localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+      localStorage.setItem(this.USER_KEY, JSON.stringify(mappedUser));
       localStorage.setItem(this.TOKEN_KEY, token);
-      
-      return user;
+      return mappedUser;
     } catch (error: any) {
       throw this.handleError(error);
     }
@@ -78,9 +85,14 @@ export class AuthService {
     try {
       const response = await api.get<{ user: User }>('/api/auth/me');
       const user = response.data.user;
-      
-      localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-      return user;
+      // Map custom fields from Drupal
+      const mappedUser = {
+        ...user,
+        firstName: user.field_first_name || user.firstName,
+        lastName: user.field_last_name || user.lastName,
+      };
+      localStorage.setItem(this.USER_KEY, JSON.stringify(mappedUser));
+      return mappedUser;
     } catch (error) {
       localStorage.removeItem(this.USER_KEY);
       return null;

@@ -25,11 +25,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // First check if there's a stored user
         const storedUser = AuthService.getStoredUser();
         if (storedUser && AuthService.isAuthenticated()) {
-          setUser(storedUser);
+          // Map name fields if present
+          const mappedUser = {
+            ...storedUser,
+            firstName: storedUser.field_first_name || storedUser.firstName,
+            lastName: storedUser.field_last_name || storedUser.lastName,
+          };
+          setUser(mappedUser);
           // Verify with server in background
           const currentUser = await AuthService.getCurrentUser();
           if (currentUser) {
-            setUser(currentUser);
+            const mappedCurrentUser = {
+              ...currentUser,
+              firstName: currentUser.field_first_name || currentUser.firstName,
+              lastName: currentUser.field_last_name || currentUser.lastName,
+            };
+            setUser(mappedCurrentUser);
           }
         }
       } catch (error) {
@@ -46,7 +57,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const user = await AuthService.login(credentials);
-      setUser(user);
+      const mappedUser = {
+        ...user,
+        firstName: user.field_first_name || user.firstName,
+        lastName: user.field_last_name || user.lastName,
+      };
+      setUser(mappedUser);
     } finally {
       setLoading(false);
     }
@@ -56,7 +72,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const user = await AuthService.register(data);
-      setUser(user);
+      const mappedUser = {
+        ...user,
+        firstName: user.field_first_name || user.firstName,
+        lastName: user.field_last_name || user.lastName,
+      };
+      setUser(mappedUser);
     } finally {
       setLoading(false);
     }

@@ -224,6 +224,8 @@ class AuthController extends ControllerBase {
         'pass' => $data['password'],
         'status' => 1,
         'field_phone_number' => $data['phoneNumber'],
+        'field_first_name' => $data['firstName'],
+        'field_last_name' => $data['lastName'],
       ]);
 
       $user->addRole($data['role']);

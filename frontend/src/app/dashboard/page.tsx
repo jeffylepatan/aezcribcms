@@ -207,6 +207,11 @@ Conversion Rate: ₱1 = 10 AezCoins`);
   }
 
   // Parent Dashboard - AezCoins & Worksheet Management
+  // Helper for greeting name
+  const greetingName = user?.firstName || user?.field_first_name
+    ? `${user?.firstName || user?.field_first_name} ${user?.lastName || user?.field_last_name}`.trim()
+    : user?.name;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -215,7 +220,7 @@ Conversion Rate: ₱1 = 10 AezCoins`);
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2" style={{ color: '#4BC0C8' }}>
-                Welcome back, {user?.name}! 🌟
+                Welcome back, {greetingName}! 🌟
               </h1>
               <p className="text-lg" style={{ color: '#5C6B73' }}>
                 Manage your AezCoins and downloaded worksheets
