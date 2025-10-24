@@ -223,11 +223,14 @@ class WorksheetController extends ControllerBase {
       // Save user entity
       $user->save();
 
-      \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Worksheet purchased successfully', [
-        '@worksheet_id' => $worksheet_id,
-        '@user_id' => $user_id,
-        '@remaining_credits' => $credits - $price,
-      ]);
+      // Check purchase eligibility before proceeding
+      $eligibility_response = $this->checkPurchaseEligibility($worksheet_id, $request);
+      $eligibility_data = json_decode($eligibility_response->getContent(), true);
+
+      if (isset($eligibility_data['success']) && !$eligibility_data['success']) {
+        \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: Eligibility check failed', $log_context);
+        return $eligibility_response;
+      }
 
       return new JsonResponse(['success' => true, 'remaining_credits' => $credits - $price], 200);
     } catch (\Exception $e) {
