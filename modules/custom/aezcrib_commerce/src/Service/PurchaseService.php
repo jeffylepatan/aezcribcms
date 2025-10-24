@@ -151,9 +151,14 @@ class PurchaseService {
         ]
       );
 
-      // $this->loggerFactory->get('aezcrib_commerce')->debug('Transaction created successfully with ID @transaction_id', [
-      //   '@transaction_id' => $transaction->id(),
-      // ]);
+      // Add the worksheet to user's owned worksheets list
+      $user = $this->entityTypeManager->getStorage('user')->load($user_id);
+      if ($user && $user->hasField('field_worksheets_owned')) {
+        $owned_worksheets = $user->get('field_worksheets_owned')->getValue();
+        $owned_worksheets[] = ['target_id' => $worksheet_id];
+        $user->set('field_worksheets_owned', $owned_worksheets);
+        $user->save();
+      }
 
       return [
         'success' => TRUE, 
