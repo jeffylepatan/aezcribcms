@@ -1,4 +1,5 @@
-'use client';
+"use client";
+import { commerceService, CreditResponse } from '@/services/commerceService';
 
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
@@ -16,9 +17,11 @@ interface WorksheetData {
   level: string;
   price: string;
   subject: string;
+  worksheetId: string;
 }
 
 export default function WorksheetsPage() {
+  // Credits state
   const { isAuthenticated } = useAuth();
   const [worksheets, setWorksheets] = useState<WorksheetData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -492,27 +495,27 @@ export default function WorksheetsPage() {
                                 }
                                 try {
                                   // Fetch current user credits
-                                  const creditsRes = await fetch('https://aezcrib.xyz/app/api/aezcrib/credits', {
-                                    method: 'GET',
-                                    credentials: 'include',
-                                    headers: { 'Content-Type': 'application/json' },
-                                  });
-                                  const creditsData = await creditsRes.json();
+                                  const creditsData = await commerceService.getCredits();
                                   const userCredits = creditsData.credits ?? 0;
                                   const worksheetPrice = parseFloat(worksheet.price);
+                                  console.log('User Credits:', userCredits);
+                                  console.log('Worksheet Price:', worksheetPrice);
                                   if (userCredits < worksheetPrice) {
                                     alert('Insufficient AezCoins. Please add more credits to purchase this worksheet.');
                                     return;
                                   }
                                   // Call purchase API
-                                  const purchaseRes = await fetch(`https://aezcrib.xyz/app/api/aezcrib/purchase/worksheet/${worksheet.name}`, {
-                                    method: 'POST',
-                                    credentials: 'include',
-                                    headers: { 'Content-Type': 'application/json' },
+                                  const purchaseRes = await commerceService.purchaseWorksheet(parseInt(worksheet.worksheetId, 10));
+                                  // Ensure the response is valid JSON and handle errors gracefully
+                                  const purchaseData = await purchaseRes.json().catch((err) => {
+                                    console.error('Error parsing purchase response JSON:', err);
+                                    throw new Error('Invalid response from server. Please try again.');
                                   });
-                                  const purchaseData = await purchaseRes.json();
                                   if (!purchaseData.success) {
-                                    alert(purchaseData.error || 'Purchase failed.');
+                                    // Log the server's response JSON for debugging
+                                    const responseJson = await purchaseRes.json();
+                                    console.error('Purchase API Response:', responseJson);
+                                    alert(`Purchase failed: ${responseJson.error || 'Unknown error'}`);
                                     return;
                                   }
                                   // Deduct credits and update worksheet ownership (handled by backend)

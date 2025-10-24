@@ -182,12 +182,20 @@ class WorksheetController extends ControllerBase {
     try {
       $credits = $this->creditService->getUserCredits($user_id);
       $log_context['@credits'] = $credits;
-      \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Attempting purchase', $log_context);
+      \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Attempting purchase', [
+        '@worksheet_id' => $worksheet_id,
+        '@user_id' => $user_id,
+        '@credits' => $credits,
+      ]);
 
       $result = $this->purchaseService->purchaseWorksheet($user_id, $worksheet_id);
-      $log_context['@purchase_result'] = json_encode($result);
+
+      \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Purchase result', [
+        '@worksheet_id' => $worksheet_id,
+        '@user_id' => $user_id,
+        '@purchase_result' => json_encode($result),
+      ]);
       $status_code = $result['success'] ? 200 : 400;
-      \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Purchase result', $log_context);
       return new JsonResponse($result, $status_code);
     } catch (\Exception $e) {
       $log_context['@error'] = $e->getMessage();
