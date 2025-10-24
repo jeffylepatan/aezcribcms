@@ -63,7 +63,7 @@ class PurchaseService {
     // Load the worksheet
     $worksheet = $this->entityTypeManager->getStorage('node')->load($worksheet_id);
     
-    if (!$worksheet || $worksheet->bundle() !== 'worksheet') {
+    if (!$worksheet || $worksheet->bundle() !== 'worksheets') {
       $this->loggerFactory->get('aezcrib_commerce')->debug('Worksheet not found or invalid bundle for worksheet ID @worksheet_id', [
         '@worksheet_id' => $worksheet_id,
       ]);
