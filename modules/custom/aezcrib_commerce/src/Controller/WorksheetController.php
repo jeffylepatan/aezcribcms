@@ -174,6 +174,11 @@ class WorksheetController extends ControllerBase {
       'user_id' => $user_id,
     ]);
 
+    // Log all request headers for debugging
+    \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Request Headers', [
+      'headers' => $request->headers->all(),
+    ]);
+
     if (!$user_id) {
       \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: User not authenticated', $log_context);
       return new JsonResponse(['error' => 'User not authenticated'], 401);
