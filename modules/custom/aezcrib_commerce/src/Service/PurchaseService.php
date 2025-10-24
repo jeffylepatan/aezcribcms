@@ -55,20 +55,35 @@ class PurchaseService {
    * Purchase a worksheet with AezCoins.
    */
   public function purchaseWorksheet($user_id, $worksheet_id) {
+    $this->loggerFactory->get('aezcrib_commerce')->debug('Starting purchaseWorksheet for user @user_id and worksheet @worksheet_id', [
+      '@user_id' => $user_id,
+      '@worksheet_id' => $worksheet_id,
+    ]);
+
     // Load the worksheet
     $worksheet = $this->entityTypeManager->getStorage('node')->load($worksheet_id);
     
     if (!$worksheet || $worksheet->bundle() !== 'worksheet') {
+      $this->loggerFactory->get('aezcrib_commerce')->debug('Worksheet not found or invalid bundle for worksheet ID @worksheet_id', [
+        '@worksheet_id' => $worksheet_id,
+      ]);
       return ['success' => FALSE, 'message' => 'Worksheet not found.'];
     }
 
     // Check if worksheet is published
     if (!$worksheet->isPublished()) {
+      $this->loggerFactory->get('aezcrib_commerce')->debug('Worksheet is not published for worksheet ID @worksheet_id', [
+        '@worksheet_id' => $worksheet_id,
+      ]);
       return ['success' => FALSE, 'message' => 'Worksheet is not available.'];
     }
 
     // Check if user already owns this worksheet
     if ($this->userOwnsWorksheet($user_id, $worksheet_id)) {
+      $this->loggerFactory->get('aezcrib_commerce')->debug('User @user_id already owns worksheet @worksheet_id', [
+        '@user_id' => $user_id,
+        '@worksheet_id' => $worksheet_id,
+      ]);
       return ['success' => FALSE, 'message' => 'You already own this worksheet.'];
     }
 
@@ -76,6 +91,10 @@ class PurchaseService {
     $price = $worksheet->get('field_worksheet_price')->value ?? 0;
     
     if ($price <= 0) {
+      $this->loggerFactory->get('aezcrib_commerce')->debug('Invalid price for worksheet ID @worksheet_id: @price', [
+        '@worksheet_id' => $worksheet_id,
+        '@price' => $price,
+      ]);
       return ['success' => FALSE, 'message' => 'Invalid worksheet price.'];
     }
 
@@ -83,6 +102,11 @@ class PurchaseService {
     $user_credits = $this->creditService->getUserCredits($user_id);
     
     if ($user_credits < $price) {
+      $this->loggerFactory->get('aezcrib_commerce')->debug('Insufficient credits for user @user_id. Required: @required, Available: @available', [
+        '@user_id' => $user_id,
+        '@required' => $price,
+        '@available' => $user_credits,
+      ]);
       return [
         'success' => FALSE, 
         'message' => 'Insufficient AezCoins. You need ' . $price . ' but only have ' . $user_credits . '.',
@@ -93,8 +117,15 @@ class PurchaseService {
 
     // Deduct credits
     if (!$this->creditService->deductCredits($user_id, $price)) {
+      $this->loggerFactory->get('aezcrib_commerce')->debug('Failed to deduct credits for user @user_id', [
+        '@user_id' => $user_id,
+      ]);
       return ['success' => FALSE, 'message' => 'Failed to deduct credits.'];
     }
+
+    $this->loggerFactory->get('aezcrib_commerce')->debug('Credits deducted successfully for user @user_id. Proceeding to create transaction.', [
+      '@user_id' => $user_id,
+    ]);
 
     // Create purchase transaction
     $transaction = $this->createPurchaseTransaction($user_id, $worksheet_id, $price);
@@ -121,6 +152,9 @@ class PurchaseService {
 
     // If transaction creation failed, refund the credits
     $this->creditService->addCredits($user_id, $price);
+    $this->loggerFactory->get('aezcrib_commerce')->debug('Transaction creation failed for user @user_id. Credits refunded.', [
+      '@user_id' => $user_id,
+    ]);
     return ['success' => FALSE, 'message' => 'Failed to create purchase record.'];
   }
 
