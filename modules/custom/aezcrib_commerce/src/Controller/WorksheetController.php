@@ -201,7 +201,7 @@ class WorksheetController extends ControllerBase {
         '@user_id' => $user_id,
         '@purchase_result' => json_encode($result),
       ]);
-      $status_code = $result['success'] ? 200 : 400;
+      $status_code = $result['success'] ? 200 : 488;
       return new JsonResponse($result, $status_code);
     } catch (\Exception $e) {
       $log_context['@error'] = $e->getMessage();
