@@ -191,48 +191,29 @@ class WorksheetController extends ControllerBase {
     }
 
     try {
-      $credits = $this->creditService->getUserCredits($user_id);
-      $log_context['@credits'] = $credits;
-      \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Attempting purchase', [
+      // Use PurchaseService to handle the purchase
+      $result = $this->purchaseService->purchaseWorksheet($user_id, $worksheet_id);
+
+      if (!$result['success']) {
+        \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: Purchase failed', [
+          '@worksheet_id' => $worksheet_id,
+          '@user_id' => $user_id,
+          '@message' => $result['message'],
+        ]);
+        return new JsonResponse(['error' => $result['message']], 400);
+      }
+
+      \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Purchase successful', [
         '@worksheet_id' => $worksheet_id,
         '@user_id' => $user_id,
-        '@credits' => $credits,
+        '@remaining_credits' => $result['remaining_credits'],
       ]);
 
-      $user = \Drupal::entityTypeManager()->getStorage('user')->load($user_id);
-      $worksheet = \Drupal::entityTypeManager()->getStorage('node')->load($worksheet_id);
-
-      if (!$user || !$worksheet) {
-        \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: User or Worksheet not found', $log_context);
-        return new JsonResponse(['error' => 'User or Worksheet not found'], 404);
-      }
-
-      // Add worksheet to user's owned worksheets
-      $owned_worksheets = $user->get('field_worksheets_owned')->getValue();
-      $owned_worksheets[] = ['target_id' => $worksheet_id];
-      $user->set('field_worksheets_owned', $owned_worksheets);
-
-      // Deduct worksheet price from user's credits
-      $price = $worksheet->get('field_worksheet_price')->value;
-      if ($credits < $price) {
-        \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: Insufficient credits', $log_context);
-        return new JsonResponse(['error' => 'Insufficient credits'], 400);
-      }
-      $user->set('field_credits', $credits - $price);
-
-      // Save user entity
-      $user->save();
-
-      // Check purchase eligibility before proceeding
-      $eligibility_response = $this->checkPurchaseEligibility($worksheet_id, $request);
-      $eligibility_data = json_decode($eligibility_response->getContent(), true);
-
-      if (isset($eligibility_data['success']) && !$eligibility_data['success']) {
-        \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: Eligibility check failed', $log_context);
-        return $eligibility_response;
-      }
-
-      return new JsonResponse(['success' => true, 'remaining_credits' => $credits - $price], 200);
+      return new JsonResponse([
+        'success' => true,
+        'message' => $result['message'],
+        'remaining_credits' => $result['remaining_credits'],
+      ], 200);
     } catch (\Exception $e) {
       $log_context['@error'] = $e->getMessage();
       $this->getLogger('aezcrib_commerce')->error('Error purchasing worksheet: @error', $log_context);
