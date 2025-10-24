@@ -109,7 +109,9 @@ export class AuthService {
   }
 
   static getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    console.log('AuthService.getToken: Retrieved token:', token ? token.substring(0, 8) + '...' : 'NONE');
+    return token;
   }
 
   static isAuthenticated(): boolean {

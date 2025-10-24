@@ -199,15 +199,37 @@ class WorksheetController extends ControllerBase {
         '@credits' => $credits,
       ]);
 
-      $result = $this->purchaseService->purchaseWorksheet($user_id, $worksheet_id);
+      $user = \Drupal::entityTypeManager()->getStorage('user')->load($user_id);
+      $worksheet = \Drupal::entityTypeManager()->getStorage('node')->load($worksheet_id);
 
-      \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Purchase result', [
+      if (!$user || !$worksheet) {
+        \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: User or Worksheet not found', $log_context);
+        return new JsonResponse(['error' => 'User or Worksheet not found'], 404);
+      }
+
+      // Add worksheet to user's owned worksheets
+      $owned_worksheets = $user->get('field_worksheets_owned')->getValue();
+      $owned_worksheets[] = ['target_id' => $worksheet_id];
+      $user->set('field_worksheets_owned', $owned_worksheets);
+
+      // Deduct worksheet price from user's credits
+      $price = $worksheet->get('field_worksheet_price')->value;
+      if ($credits < $price) {
+        \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: Insufficient credits', $log_context);
+        return new JsonResponse(['error' => 'Insufficient credits'], 400);
+      }
+      $user->set('field_aezcoins', $credits - $price);
+
+      // Save user entity
+      $user->save();
+
+      \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Worksheet purchased successfully', [
         '@worksheet_id' => $worksheet_id,
         '@user_id' => $user_id,
-        '@purchase_result' => json_encode($result),
+        '@remaining_credits' => $credits - $price,
       ]);
-      $status_code = $result['success'] ? 200 : 488;
-      return new JsonResponse($result, $status_code);
+
+      return new JsonResponse(['success' => true, 'remaining_credits' => $credits - $price], 200);
     } catch (\Exception $e) {
       $log_context['@error'] = $e->getMessage();
       $this->getLogger('aezcrib_commerce')->error('Error purchasing worksheet: @error', $log_context);
