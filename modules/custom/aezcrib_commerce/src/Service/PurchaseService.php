@@ -142,9 +142,9 @@ class PurchaseService {
         ]
       );
 
-      $this->loggerFactory->get('aezcrib_commerce')->debug('Transaction created successfully with ID @transaction_id', [
-        '@transaction_id' => $transaction->id(),
-      ]);
+      // $this->loggerFactory->get('aezcrib_commerce')->debug('Transaction created successfully with ID @transaction_id', [
+      //   '@transaction_id' => $transaction->id(),
+      // ]);
 
       return [
         'success' => TRUE, 
