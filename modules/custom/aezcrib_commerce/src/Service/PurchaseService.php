@@ -7,6 +7,7 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\aezcrib_commerce\Service\CreditService;
 use Drupal\node\NodeInterface;
+use Drupal\Core\File\FileUrlGeneratorInterface;
 
 /**
  * Service for managing worksheet purchases.
@@ -42,13 +43,21 @@ class PurchaseService {
   protected $creditService;
 
   /**
+   * The file URL generator.
+   *
+   * @var \Drupal\Core\File\FileUrlGeneratorInterface
+   */
+  protected $fileUrlGenerator;
+
+  /**
    * Constructs a new PurchaseService object.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, LoggerChannelFactoryInterface $logger_factory, CreditService $credit_service) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxyInterface $current_user, LoggerChannelFactoryInterface $logger_factory, CreditService $credit_service, FileUrlGeneratorInterface $file_url_generator) {
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $current_user;
     $this->loggerFactory = $logger_factory;
     $this->creditService = $credit_service;
+    $this->fileUrlGenerator = $file_url_generator;
   }
 
   /**
@@ -251,7 +260,7 @@ class PurchaseService {
     if ($worksheet->hasField('field_worksheet_image') && !$worksheet->get('field_worksheet_image')->isEmpty()) {
       $file = $worksheet->get('field_worksheet_image')->entity;
       if ($file) {
-        return file_create_url($file->getFileUri());
+        return $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
       }
     }
     return NULL;
