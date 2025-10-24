@@ -218,7 +218,7 @@ class WorksheetController extends ControllerBase {
         \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: Insufficient credits', $log_context);
         return new JsonResponse(['error' => 'Insufficient credits'], 400);
       }
-      $user->set('field_aezcoins', $credits - $price);
+      $user->set('field_credits', $credits - $price);
 
       // Save user entity
       $user->save();
