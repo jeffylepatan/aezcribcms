@@ -302,6 +302,10 @@ class AuthController extends ControllerBase {
    * Get current user endpoint.
    */
   public function me(Request $request) {
+    \Drupal::logger('aezcrib_auth')->notice('me() called by user ID: @uid', [
+      '@uid' => $this->currentUser->id(),
+    ]);
+
     if ($this->currentUser->isAnonymous()) {
       $response = new JsonResponse([
         'message' => 'Not authenticated',
@@ -309,14 +313,26 @@ class AuthController extends ControllerBase {
       return $this->addCorsHeaders($response, $request);
     }
 
+    \Drupal::logger('aezcrib_auth')->notice('Authenticated request by user ID: @uid', [
+      '@uid' => $this->currentUser->id(),
+    ]);
+
     $user = User::load($this->currentUser->id());
-    
+
+    \Drupal::logger('aezcrib_auth')->notice('User loaded: @uid', [
+      '@uid' => $this->currentUser->id(),
+    ]);
+
     if (!$user) {
       $response = new JsonResponse([
         'message' => 'User not found',
       ], 404);
       return $this->addCorsHeaders($response, $request);
     }
+
+    \Drupal::logger('aezcrib_auth')->notice('Returning data for user ID: @uid', [
+      '@uid' => $this->currentUser->id(),
+    ]);
 
     // Get user role
     $roles = $user->getRoles();
@@ -328,6 +344,12 @@ class AuthController extends ControllerBase {
       }
     }
 
+    \Drupal::logger('aezcrib_auth')->notice('Returning user roles for user ID: @uid', [
+      '@uid' => $this->currentUser->id(),
+      '@roles' => implode(',', $roles),
+      '@custom_role' => $custom_role,
+    ]);
+
     $response = new JsonResponse([
       'user' => [
         'id' => $user->id(),
@@ -335,6 +357,10 @@ class AuthController extends ControllerBase {
         'name' => $user->getDisplayName(),
         'role' => $custom_role,
       ],
+    ]);
+
+    \Drupal::logger('aezcrib_auth')->notice('Returning user data for user ID: @uid', [
+      '@uid' => $this->currentUser->id(),
     ]);
 
     return $this->addCorsHeaders($response, $request);
