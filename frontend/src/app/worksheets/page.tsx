@@ -71,6 +71,14 @@ export default function WorksheetsPage() {
     fetchWorksheets();
   }, []);
 
+  // Helper to determine if a worksheet is purchased by current user
+  const isWorksheetPurchased = (wsId: string) => {
+    return purchasedWorksheets.some((pw) => {
+      const id = String((pw as any).worksheetId ?? (pw as any).id ?? (pw as any).nid ?? (pw as any).worksheet_id ?? '');
+      return id === String(wsId);
+    });
+  };
+
   useEffect(() => {
     if (user) {
       fetchDashboardData();
@@ -184,11 +192,6 @@ export default function WorksheetsPage() {
               <div className="text-lg">
                 <span className="bg-white bg-opacity-90 px-4 py-2 rounded-full font-semibold shadow-md" style={{ color: '#2D3748' }}>
                   {loading ? 'Loading...' : `${filteredWorksheets.length} worksheets available`}
-                </span>
-              </div>
-              <div className="text-lg mt-4">
-                <span className="bg-white bg-opacity-90 px-4 py-2 rounded-full font-semibold shadow-md" style={{ color: '#2D3748' }}>
-                  {purchasedWorksheets.length} purchased worksheets
                 </span>
               </div>
             </div>
@@ -499,7 +502,7 @@ export default function WorksheetsPage() {
                             />
                             <span className="font-semibold">{worksheet.price}</span>
                           </div>
-                          {parseFloat(worksheet.price) === 0 ? (
+                          {(parseFloat(worksheet.price) === 0 || isWorksheetPurchased(worksheet.worksheetId)) ? (
                             <a
                               href={`https://aezcrib.xyz${worksheet.worksheet}`}
                               target="_blank"
@@ -527,18 +530,11 @@ export default function WorksheetsPage() {
                                     alert('Insufficient AezCoins. Please add more credits to purchase this worksheet.');
                                     return;
                                   }
-                                  // Call purchase API
-                                  const purchaseRes = await commerceService.purchaseWorksheet(parseInt(worksheet.worksheetId, 10));
-                                  // Ensure the response is valid JSON and handle errors gracefully
-                                  const purchaseData = await purchaseRes.json().catch((err) => {
-                                    console.error('Error parsing purchase response JSON:', err);
-                                    throw new Error('Invalid response from server. Please try again.');
-                                  });
-                                  if (!purchaseData.success) {
-                                    // Log the server's response JSON for debugging
-                                    const responseJson = await purchaseRes.json();
-                                    console.error('Purchase API Response:', responseJson);
-                                    alert(`Purchase failed: ${responseJson.error || 'Unknown error'}`);
+                                  // Call purchase API (commerceService returns parsed response)
+                                  const purchaseData = await commerceService.purchaseWorksheet(parseInt(worksheet.worksheetId, 10));
+                                  if (!purchaseData || !purchaseData.success) {
+                                    console.error('Purchase API Response:', purchaseData);
+                                    alert(`Purchase failed: ${purchaseData?.error || 'Unknown error'}`);
                                     return;
                                   }
                                   // Deduct credits and update worksheet ownership (handled by backend)
@@ -675,7 +671,7 @@ export default function WorksheetsPage() {
                               </div>
                             </td>
                             <td className="px-6 py-4">
-                              {parseFloat(worksheet.price) === 0 ? (
+                              {(parseFloat(worksheet.price) === 0 || isWorksheetPurchased(worksheet.worksheetId)) ? (
                                 <a
                                   href={`https://aezcrib.xyz${worksheet.worksheet}`}
                                   target="_blank"
