@@ -226,7 +226,21 @@ class WorksheetController extends ControllerBase {
    */
   public function downloadWorksheet($worksheet_id, Request $request) {
     $user_id = $this->authenticateUser($request);
-    
+    \Drupal::logger('aezcrib_commerce')->info('downloadWorksheet: Request Received', [
+      '@worksheet_id' => $worksheet_id,
+      '@user_id' => $user_id,
+    ]);
+
+    if (!$user_id) {
+      return new JsonResponse(['error' => 'User not authenticated'], 401);
+    }
+
+    // Validate worksheet ID
+    if (!is_numeric($worksheet_id) || $worksheet_id <= 0) {
+      return new JsonResponse(['error' => 'Invalid worksheet ID'], 400);
+    }
+
+    try {
     if (!$user_id) {
       return new JsonResponse(['error' => 'User not authenticated'], 401);
     }
