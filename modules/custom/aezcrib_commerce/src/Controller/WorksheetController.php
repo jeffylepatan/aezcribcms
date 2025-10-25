@@ -168,25 +168,25 @@ class WorksheetController extends ControllerBase {
       '@user_id' => $user_id,
     ];
 
-    \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Purchase Request Received', [
-      'worksheet_id' => $worksheet_id,
-      'auth_header' => $authHeader ? substr($authHeader, 0, 20) . '...' : 'none',
-      'user_id' => $user_id,
-    ]);
+    // \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Purchase Request Received', [
+    //   'worksheet_id' => $worksheet_id,
+    //   'auth_header' => $authHeader ? substr($authHeader, 0, 20) . '...' : 'none',
+    //   'user_id' => $user_id,
+    // ]);
 
     // Log all request headers for debugging
-    \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Request Headers', [
-      'headers' => $request->headers->all(),
-    ]);
+    // \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Request Headers', [
+    //   'headers' => $request->headers->all(),
+    // ]);
 
     if (!$user_id) {
-      \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: User not authenticated', $log_context);
+      // \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: User not authenticated', $log_context);
       return new JsonResponse(['error' => 'User not authenticated'], 401);
     }
 
     // Validate worksheet ID
     if (!is_numeric($worksheet_id) || $worksheet_id <= 0) {
-      \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: Invalid worksheet ID', $log_context);
+      // \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: Invalid worksheet ID', $log_context);
       return new JsonResponse(['error' => 'Invalid worksheet ID'], 400);
     }
 
@@ -195,19 +195,19 @@ class WorksheetController extends ControllerBase {
       $result = $this->purchaseService->purchaseWorksheet($user_id, $worksheet_id);
 
       if (!$result['success']) {
-        \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: Purchase failed', [
-          '@worksheet_id' => $worksheet_id,
-          '@user_id' => $user_id,
-          '@message' => $result['message'],
-        ]);
+        // \Drupal::logger('aezcrib_commerce')->warning('purchaseWorksheet: Purchase failed', [
+        //   '@worksheet_id' => $worksheet_id,
+        //   '@user_id' => $user_id,
+        //   '@message' => $result['message'],
+        // ]);
         return new JsonResponse(['error' => $result['message']], 400);
       }
 
-      \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Purchase successful', [
-        '@worksheet_id' => $worksheet_id,
-        '@user_id' => $user_id,
-        '@remaining_credits' => $result['remaining_credits'],
-      ]);
+      // \Drupal::logger('aezcrib_commerce')->info('purchaseWorksheet: Purchase successful', [
+      //   '@worksheet_id' => $worksheet_id,
+      //   '@user_id' => $user_id,
+      //   '@remaining_credits' => $result['remaining_credits'],
+      // ]);
 
       return new JsonResponse([
         'success' => true,
@@ -235,10 +235,18 @@ class WorksheetController extends ControllerBase {
       return new JsonResponse(['error' => 'User not authenticated'], 401);
     }
 
+    \Drupal::logger('aezcrib_commerce')->info('Passed User ID Check: Authenticated user @user_id', [
+      '@user_id' => $user_id,
+    ]);
+
     // Validate worksheet ID
     if (!is_numeric($worksheet_id) || $worksheet_id <= 0) {
       return new JsonResponse(['error' => 'Invalid worksheet ID'], 400);
     }
+
+    \Drupal::logger('aezcrib_commerce')->info('Passed Worksheet ID Check: Authenticated user @user_id', [
+      '@user_id' => $user_id,
+    ]);
 
     try {
       // Check if user owns the worksheet
