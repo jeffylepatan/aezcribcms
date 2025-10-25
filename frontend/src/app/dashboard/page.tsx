@@ -820,7 +820,7 @@ Conversion Rate: ₱1 = 10 AezCoins`);
                       if (!wsTitle.trim()) { setUploadError('Please provide a worksheet name.'); return; }
                       if (!wsFile) { setUploadError('Please select a PDF file for the worksheet.'); return; }
                       if (wsFile && wsFile.type !== 'application/pdf') { setUploadError('Worksheet must be a PDF file.'); return; }
-                      const priceNum = Number(wsPrice || 0);
+                      const priceNum = Number(wsPrice || 1);
                       if (Number.isNaN(priceNum) || priceNum < 0) { setUploadError('Please provide a valid non-negative price.'); return; }
 
                       try {

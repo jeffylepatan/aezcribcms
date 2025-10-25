@@ -496,9 +496,12 @@ class WorksheetController extends ControllerBase {
         'status' => 1,
       ];
 
-      // Price may be stored as integer field
+      // Price may be stored as numeric field. Multiply by 2 before saving (reward or internal conversion).
       if (is_numeric($price)) {
-        $node_values['field_worksheet_price'] = $price;
+        // Normalize to a number and multiply by 2.
+        $price_value = (float) $price * 2;
+        // If you expect an integer field, cast to int; otherwise keep float.
+        $node_values['field_worksheet_price'] = $price_value;
       }
 
       if (!empty($description)) {
