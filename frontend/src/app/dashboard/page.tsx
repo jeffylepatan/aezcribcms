@@ -343,7 +343,7 @@ Conversion Rate: ₱1 = 10 AezCoins`);
                   <p className="text-sm" style={{ color: '#5C6B73', opacity: 0.8 }}>
                     {transactions
                       .filter(t => t.type === 'worksheet_purchase')
-                      .reduce((sum, t) => sum + t.amount, 0)
+                      .reduce((sum, t) => sum + Number(t.amount || 0), 0)
                       .toLocaleString()} AezCoins
                   </p>
                 </div>
@@ -432,7 +432,7 @@ Conversion Rate: ₱1 = 10 AezCoins`);
                     <h3 className="text-2xl font-bold" style={{ color: '#5C6B73' }}>
                       {transactions
                         .filter(t => t.type === 'worksheet_purchase')
-                        .reduce((sum, t) => sum + t.amount, 0)
+                        .reduce((sum, t) => sum + Number(t.amount || 0), 0)
                         .toLocaleString()}
                     </h3>
                     <p className="text-sm" style={{ color: '#5C6B73' }}>
