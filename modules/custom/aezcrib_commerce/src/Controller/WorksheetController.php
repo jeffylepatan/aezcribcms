@@ -241,16 +241,6 @@ class WorksheetController extends ControllerBase {
     }
 
     try {
-    if (!$user_id) {
-      return new JsonResponse(['error' => 'User not authenticated'], 401);
-    }
-
-    // Validate worksheet ID
-    if (!is_numeric($worksheet_id) || $worksheet_id <= 0) {
-      return new JsonResponse(['error' => 'Invalid worksheet ID'], 400);
-    }
-
-    try {
       // Check if user owns the worksheet
       if (!$this->purchaseService->userOwnsWorksheet($user_id, $worksheet_id)) {
         return new JsonResponse(['error' => 'You do not own this worksheet'], 403);
