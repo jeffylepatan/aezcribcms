@@ -306,7 +306,8 @@ class PurchaseService {
     if ($worksheet->hasField('field_worksheet') && !$worksheet->get('field_worksheet')->isEmpty()) {
       $file = $worksheet->get('field_worksheet')->entity;
       if ($file) {
-        return file_create_url($file->getFileUri());
+        // Use the injected FileUrlGenerator service to generate an absolute URL.
+        return $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
       }
     }
     \Drupal::logger('aezcrib_commerce')->info('No file found for worksheet @worksheet_id for user @user_id', [
