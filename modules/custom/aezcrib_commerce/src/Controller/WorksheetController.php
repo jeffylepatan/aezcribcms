@@ -226,7 +226,7 @@ class WorksheetController extends ControllerBase {
    */
   public function downloadWorksheet($worksheet_id, Request $request) {
     $user_id = $this->authenticateUser($request);
-    \Drupal::logger('aezcrib_commerce')->info('downloadWorksheet: Request Received', [
+    \Drupal::logger('aezcrib_commerce')->info('downloadWorksheet: Request Received for @worksheet_id by @user_id', [
       '@worksheet_id' => $worksheet_id,
       '@user_id' => $user_id,
     ]);
