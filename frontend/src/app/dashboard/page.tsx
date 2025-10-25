@@ -461,14 +461,14 @@ Conversion Rate: ₱1 = 10 AezCoins`);
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                        style={{ borderColor: '#4BC0C8', backgroundColor: '#FFFFFF' }}
+                        style={{ borderColor: '#4BC0C8', backgroundColor: '#FFFFFF', color: '#5C6B73' }}
                       />
                     </div>
                     <select
                       value={filterSubject}
                       onChange={(e) => setFilterSubject(e.target.value)}
                       className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                      style={{ borderColor: '#4BC0C8', backgroundColor: '#FFFFFF' }}
+                      style={{ borderColor: '#4BC0C8', backgroundColor: '#FFFFFF', color: '#5C6B73' }}
                     >
                       <option value="all">All Subjects</option>
                       <option value="Math">Math</option>

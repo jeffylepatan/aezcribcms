@@ -1,12 +1,11 @@
 "use client";
-import { commerceService, CreditResponse } from '@/services/commerceService';
-
+import { commerceService, UserWorksheet, CreditResponse } from '@/services/commerceService';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { Search, Filter, X, ArrowUpDown, Grid3X3, List } from 'lucide-react';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 // TypeScript interface for worksheet data from Drupal API
 interface WorksheetData {
@@ -22,8 +21,9 @@ interface WorksheetData {
 
 export default function WorksheetsPage() {
   // Credits state
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [worksheets, setWorksheets] = useState<WorksheetData[]>([]);
+  const [purchasedWorksheets, setPurchasedWorksheets] = useState<UserWorksheet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -69,6 +69,24 @@ export default function WorksheetsPage() {
     };
 
     fetchWorksheets();
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
+
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      // Fetch purchased worksheets
+      const worksheetsResponse = await commerceService.getUserWorksheets();
+      if (worksheetsResponse.success) {
+        setPurchasedWorksheets(worksheetsResponse.worksheets);
+      }
+    } catch (error) {
+      console.error('Error fetching User Worksheet data:', error);
+    }
   }, []);
 
   // Get unique values for filters
@@ -166,6 +184,11 @@ export default function WorksheetsPage() {
               <div className="text-lg">
                 <span className="bg-white bg-opacity-90 px-4 py-2 rounded-full font-semibold shadow-md" style={{ color: '#2D3748' }}>
                   {loading ? 'Loading...' : `${filteredWorksheets.length} worksheets available`}
+                </span>
+              </div>
+              <div className="text-lg mt-4">
+                <span className="bg-white bg-opacity-90 px-4 py-2 rounded-full font-semibold shadow-md" style={{ color: '#2D3748' }}>
+                  {purchasedWorksheets.length} purchased worksheets
                 </span>
               </div>
             </div>
