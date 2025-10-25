@@ -47,8 +47,8 @@ export default function DashboardPage() {
   const [wsImage, setWsImage] = useState<File | null>(null);
   const [wsPrice, setWsPrice] = useState('0');
   const [wsDescription, setWsDescription] = useState('');
-  const [wsLevel, setWsLevel] = useState('pre-k');
-  const [wsSubject, setWsSubject] = useState('Language / Literacy');
+  const [wsLevel, setWsLevel] = useState('pre_k');
+  const [wsSubject, setWsSubject] = useState('language_literacy');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -766,14 +766,14 @@ Conversion Rate: ₱1 = 10 AezCoins`);
                       onChange={(e) => setWsLevel(e.target.value)}
                       className="w-full px-3 py-3 border rounded placeholder-[#5C6B73] font-medium text-gray-700"
                     >
-                      <option value="pre-k">pre-k</option>
+                      <option value="pre_k">pre-k</option>
                       <option value="kindergarten">kindergarten</option>
-                      <option value="1st grade">1st grade</option>
-                      <option value="2nd grade">2nd grade</option>
-                      <option value="3rd grade">3rd grade</option>
-                      <option value="4th grade">4th grade</option>
-                      <option value="5th grade">5th grade</option>
-                      <option value="6th grade">6th grade</option>
+                      <option value="1st_grade">1st grade</option>
+                      <option value="2nd_grade">2nd grade</option>
+                      <option value="3rd_grade">3rd grade</option>
+                      <option value="4th_grade">4th grade</option>
+                      <option value="5th_grade">5th grade</option>
+                      <option value="6th_grade">6th grade</option>
                     </select>
                   </div>
                 </div>
@@ -785,13 +785,13 @@ Conversion Rate: ₱1 = 10 AezCoins`);
                     onChange={(e) => setWsSubject(e.target.value)}
                     className="w-full px-3 py-2 border rounded placeholder-[#5C6B73] font-medium text-gray-700"
                   >
-                    <option>Language / Literacy</option>
-                    <option>Math</option>
-                    <option>Science</option>
-                    <option>Social Studies</option>
-                    <option>Creative Arts</option>
-                    <option>Physical Education</option>
-                    <option>Practical Life Skills</option>
+                    <option value="language_literacy">Language / Literacy</option>
+                    <option value="math">Math</option>
+                    <option value="science">Science</option>
+                    <option value="social_studies">Social Studies</option>
+                    <option value="creative_arts">Creative Arts</option>
+                    <option value="physical_education">Physical Education</option>
+                    <option value="practical">Practical Life Skills</option>
                   </select>
                 </div>
 
@@ -838,7 +838,7 @@ Conversion Rate: ₱1 = 10 AezCoins`);
                         if (res && res.success) {
                           // Close modal and refresh data
                           setShowUploadModal(false);
-                          setWsTitle(''); setWsFile(null); setWsImage(null); setWsPrice('0'); setWsDescription(''); setWsLevel('pre-k'); setWsSubject('Language / Literacy');
+                          setWsTitle(''); setWsFile(null); setWsImage(null); setWsPrice('0'); setWsDescription(''); setWsLevel('pre_k'); setWsSubject('language_literacy');
                           await fetchDashboardData();
                           setActiveTab('worksheets');
                           alert('Worksheet uploaded successfully. It may take a moment to appear in your library.');

@@ -389,8 +389,44 @@ class WorksheetController extends ControllerBase {
       $title = trim($request->request->get('title', ''));
       $price = $request->request->get('price', 0);
       $description = $request->request->get('description', '');
-      $gradeLevel = $request->request->get('gradeLevel', 'pre-k');
-      $subject = $request->request->get('subject', '');
+      // Normalize and validate list fields for level and subject.
+      $gradeLevelRaw = $request->request->get('gradeLevel', 'pre_k');
+      $subjectRaw = $request->request->get('subject', '');
+
+      $normalize_list_value = function ($s) {
+        $s = trim((string) $s);
+        $s = strtolower($s);
+        // Replace common separators with underscore and remove invalid chars.
+        $s = str_replace([' ', '-', '/'], '_', $s);
+        $s = preg_replace('/[^a-z0-9_]/', '', $s);
+        return $s;
+      };
+
+      $allowed_levels = [
+        'pre_k', 'kindergarten', '1st_grade', '2nd_grade', '3rd_grade', '4th_grade', '5th_grade', '6th_grade',
+      ];
+      $allowed_subjects = [
+        'language_literacy', 'math', 'science', 'social_studies', 'creative_arts', 'physical_education', 'practical',
+      ];
+
+      $gradeLevel = $normalize_list_value($gradeLevelRaw);
+      if ($gradeLevel === '') {
+        $gradeLevel = 'pre_k';
+      }
+      if (!in_array($gradeLevel, $allowed_levels, TRUE)) {
+        return new JsonResponse([
+          'error' => 'Invalid grade level',
+          'allowed' => $allowed_levels,
+        ], 400);
+      }
+
+      $subject = $normalize_list_value($subjectRaw);
+      if ($subject !== '' && !in_array($subject, $allowed_subjects, TRUE)) {
+        return new JsonResponse([
+          'error' => 'Invalid subject',
+          'allowed' => $allowed_subjects,
+        ], 400);
+      }
 
       // Validate required
       if (empty($title)) {
@@ -408,14 +444,15 @@ class WorksheetController extends ControllerBase {
         return new JsonResponse(['error' => 'Uploaded worksheet must be a PDF file'], 400);
       }
 
-      // Save uploaded PDF as managed file
-      $original_name = preg_replace('/[^A-Za-z0-9._-]/', '_', $uploaded->getClientOriginalName());
-      $destination = 'public://worksheets/' . time() . '_' . $original_name;
-      $data = \file_get_contents($uploaded->getRealPath());
-      // Ensure upload directories exist and are writable.
-      $file_system = \Drupal::service('file_system');
-      $worksheets_dir = 'public://worksheets';
-      $thumbs_dir = 'public://worksheets/thumbs';
+  // Save uploaded PDF as managed file (per-user directory)
+  $original_name = preg_replace('/[^A-Za-z0-9._-]/', '_', $uploaded->getClientOriginalName());
+  $user_dir = 'public://user/' . $user_id . '/worksheets';
+  $destination = $user_dir . '/' . time() . '_' . $original_name;
+  $data = \file_get_contents($uploaded->getRealPath());
+  // Ensure upload directories exist and are writable.
+  $file_system = \Drupal::service('file_system');
+  $worksheets_dir = $user_dir;
+  $thumbs_dir = $user_dir . '/thumbs';
       // Create main directory (fatal if it fails).
       if (!$file_system->prepareDirectory($worksheets_dir, \Drupal\Core\File\FileSystemInterface::CREATE_DIRECTORY | \Drupal\Core\File\FileSystemInterface::MODIFY_PERMISSIONS)) {
         $this->getLogger('aezcrib_commerce')->error('Failed to prepare upload directory: @dir', ['@dir' => $worksheets_dir]);
@@ -440,11 +477,11 @@ class WorksheetController extends ControllerBase {
       $thumbnail = $request->files->get('thumbnail');
       $thumb_file = NULL;
       if ($thumbnail) {
-        $thumb_name = preg_replace('/[^A-Za-z0-9._-]/', '_', $thumbnail->getClientOriginalName());
-        $thumb_dest = 'public://worksheets/thumbs/' . time() . '_' . $thumb_name;
-        $thumb_data = \file_get_contents($thumbnail->getRealPath());
-        $thumb_replace = defined('FILE_EXISTS_RENAME') ? \FILE_EXISTS_RENAME : 1;
-        $thumb_file = \Drupal::service('file.repository')->writeData($thumb_data, $thumb_dest, $thumb_replace);
+  $thumb_name = preg_replace('/[^A-Za-z0-9._-]/', '_', $thumbnail->getClientOriginalName());
+  $thumb_dest = $thumbs_dir . '/' . time() . '_' . $thumb_name;
+  $thumb_data = \file_get_contents($thumbnail->getRealPath());
+  $thumb_replace = defined('FILE_EXISTS_RENAME') ? \FILE_EXISTS_RENAME : 1;
+  $thumb_file = \Drupal::service('file.repository')->writeData($thumb_data, $thumb_dest, $thumb_replace);
         if ($thumb_file) {
           $thumb_file->setPermanent();
           $thumb_file->save();
