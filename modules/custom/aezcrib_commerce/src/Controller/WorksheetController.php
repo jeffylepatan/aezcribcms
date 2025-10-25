@@ -301,6 +301,12 @@ class WorksheetController extends ControllerBase {
       $this->getLogger('aezcrib_commerce')->error('Error downloading worksheet: @error', [
         '@error' => $e->getMessage(),
       ]);
+
+      \Drupal::logger('aezcrib_commerce')->info('Error downloading worksheet: Request Received for worksheet (@worksheet_id) by user (@user_id) - @error', [
+        '@worksheet_id' => $worksheet_id,
+        '@user_id' => $user_id,
+        '@error' => $e->getMessage(),
+      ]);
       
       return new JsonResponse(['error' => 'An error occurred while downloading the file'], 500);
     }
