@@ -149,6 +149,49 @@ class CommerceService {
     }
   }
 
+  /**
+   * Make a request intended to return a Blob (file download).
+   * Reuses the same token/credentials logic as makeRequest but returns a Blob.
+   */
+  private async makeRequestBlob(endpoint: string, options: RequestInit = {}): Promise<Blob> {
+    const url = `${this.baseUrl}${endpoint}`;
+    const token = AuthService.getToken();
+
+    const defaultOptions: RequestInit = {
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      credentials: 'include',
+    };
+
+    try {
+      console.log('Making blob request to:', url, { hasToken: !!token });
+      const response = await fetch(url, { ...defaultOptions, ...options });
+
+      console.log('Blob API Response:', { status: response.status, headers: Object.fromEntries(response.headers.entries()) });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          // Return a clearer error for 404s on downloads
+          const text = await response.text().catch(() => null);
+          throw new Error(`Download endpoint not found (404). ${text ? `Server message: ${text}` : ''}`);
+        }
+        if (response.status === 401 || response.status === 403) {
+          const text = await response.text().catch(() => null);
+          throw new Error(`Unauthorized to download (status: ${response.status}). ${text ? `Server message: ${text}` : ''}`);
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.blob();
+    } catch (error) {
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        throw new Error(`Cannot connect to API at ${this.baseUrl}. Please check if the Drupal site is accessible and CORS is configured.`);
+      }
+      throw error;
+    }
+  }
+
   // Get user's current AezCoins balance
   async getCredits(): Promise<CreditResponse> {
     return this.makeRequest<CreditResponse>('/api/aezcrib/credits');
@@ -186,16 +229,10 @@ class CommerceService {
 
   // Download a purchased worksheet
   async downloadWorksheet(worksheetId: number): Promise<Blob> {
-    const url = `${this.baseUrl}/api/aezcrib/download/worksheet/${worksheetId}`;
-    const response = await fetch(url, {
-      credentials: 'include',
+    // Use the makeRequestBlob helper which centralizes token/credentials and error messages
+    return this.makeRequestBlob(`/api/aezcrib/download/worksheet/${worksheetId}`, {
+      method: 'GET',
     });
-    
-    if (!response.ok) {
-      throw new Error(`Download failed! status: ${response.status}`);
-    }
-    
-    return response.blob();
   }
 
   // Get transaction history
