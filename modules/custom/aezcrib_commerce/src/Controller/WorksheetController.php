@@ -226,117 +226,47 @@ class WorksheetController extends ControllerBase {
    */
   public function downloadWorksheet($worksheet_id, Request $request) {
     $user_id = $this->authenticateUser($request);
-    \Drupal::logger('aezcrib_commerce')->info('downloadWorksheet: Request Received for @worksheet_id by @user_id', [
-      '@worksheet_id' => $worksheet_id,
-      '@user_id' => $user_id,
-    ]);
 
     if (!$user_id) {
       return new JsonResponse(['error' => 'User not authenticated'], 401);
     }
-
-    \Drupal::logger('aezcrib_commerce')->info('Passed User ID Check: Authenticated user @user_id', [
-      '@user_id' => $user_id,
-    ]);
 
     // Validate worksheet ID
     if (!is_numeric($worksheet_id) || $worksheet_id <= 0) {
       return new JsonResponse(['error' => 'Invalid worksheet ID'], 400);
     }
 
-    \Drupal::logger('aezcrib_commerce')->info('Passed Worksheet ID Check: Authenticated user @user_id', [
-      '@user_id' => $user_id,
-    ]);
-
     try {
-
-      \Drupal::logger('aezcrib_commerce')->info('Try Start: Authenticated user @user_id', [
-        '@user_id' => $user_id,
-      ]);
 
       // Check if user owns the worksheet
       if (!$this->purchaseService->userOwnsWorksheet($user_id, $worksheet_id)) {
         return new JsonResponse(['error' => 'You do not own this worksheet'], 403);
       }
 
-      \Drupal::logger('aezcrib_commerce')->info('Check User Ownership: Authenticated user @user_id', [
-        '@user_id' => $user_id,
-      ]);
-
       // Get download URL
       $download_url = $this->purchaseService->getWorksheetDownloadUrl($user_id, $worksheet_id);
-
-      \Drupal::logger('aezcrib_commerce')->info('Download URL Check: Authenticated user @user_id', [
-        '@user_id' => $user_id,
-      ]);
       
       if (!$download_url) {
-
-        \Drupal::logger('aezcrib_commerce')->info('Download URL not found: Authenticated user @user_id', [
-          '@user_id' => $user_id,
-        ]);
-
         return new JsonResponse(['error' => 'Worksheet file not found'], 404);
       }
 
-      \Drupal::logger('aezcrib_commerce')->info('Download URL Passed: Authenticated user @user_id', [
-        '@user_id' => $user_id,
-      ]);
-
       // Load the worksheet to get the file
       $worksheet = $this->entityTypeManager()->getStorage('node')->load($worksheet_id);
-
-      \Drupal::logger('aezcrib_commerce')->info('Worksheet Loaded: Authenticated user @user_id', [
-        '@user_id' => $user_id,
-      ]);
       
       if (!$worksheet || !$worksheet->hasField('field_worksheet') || $worksheet->get('field_worksheet')->isEmpty()) {
-
-        \Drupal::logger('aezcrib_commerce')->info('Worksheet Not Found: Authenticated user @user_id', [
-          '@user_id' => $user_id,
-        ]);
-
         return new JsonResponse(['error' => 'Worksheet file not available'], 404);
       }
 
-      \Drupal::logger('aezcrib_commerce')->info('Worksheet Loaded: Authenticated user @user_id', [
-        '@user_id' => $user_id,
-      ]);
-
       $file = $worksheet->get('field_worksheet')->entity;
-
-      \Drupal::logger('aezcrib_commerce')->info('File Loaded: Authenticated user @user_id and file @file', [
-        '@user_id' => $user_id,
-        '@file' => $file->getFilename(),
-      ]);
       
       if (!$file) {
-
-        \Drupal::logger('aezcrib_commerce')->info('File Not Found: Authenticated user @user_id', [
-          '@user_id' => $user_id,
-        ]);
         return new JsonResponse(['error' => 'File not found'], 404);
       }
 
-      \Drupal::logger('aezcrib_commerce')->info('File Loaded: Authenticated user @user_id and file @file', [
-        '@user_id' => $user_id,
-        '@file' => $file->getFilename(),
-      ]);
-
       $file_path = $file->getFileUri();
       $real_path = \Drupal::service('file_system')->realpath($file_path);
-
-      \Drupal::logger('aezcrib_commerce')->info('File Found: Authenticated user @user_id and file path @file_path and real path @real_path', [
-        '@user_id' => $user_id,
-        '@file_path' => $file_path,
-        '@real_path' => $real_path,
-      ]);
       
       if (!file_exists($real_path)) {
-
-        \Drupal::logger('aezcrib_commerce')->info('Real Path Not Found: Authenticated user @user_id', [
-          '@user_id' => $user_id,
-        ]);
         return new JsonResponse(['error' => 'Physical file not found'], 404);
       }
 
@@ -347,23 +277,9 @@ class WorksheetController extends ControllerBase {
         $file->getFilename()
       );
 
-      \Drupal::logger('aezcrib_commerce')->info('downloadWorksheet: Request Received for @real_path - @worksheet_id by @user_id - @download_url', [
-        '@response' => 'File prepared for download',
-        '@real_path' => $real_path,
-        '@worksheet_id' => $worksheet_id,
-        '@user_id' => $user_id,
-        '@download_url' => $download_url,
-      ]);
-
       return $response;
     } catch (\Exception $e) {
       $this->getLogger('aezcrib_commerce')->error('Error downloading worksheet: @error', [
-        '@error' => $e->getMessage(),
-      ]);
-
-      \Drupal::logger('aezcrib_commerce')->info('Error downloading worksheet: Request Received for worksheet (@worksheet_id) by user (@user_id) - @error', [
-        '@worksheet_id' => $worksheet_id,
-        '@user_id' => $user_id,
         '@error' => $e->getMessage(),
       ]);
       
