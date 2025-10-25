@@ -40,6 +40,39 @@ class WorksheetController extends ControllerBase {
   }
 
   /**
+   * Add CORS headers to response (similar to CreditController).
+   */
+  private function addCorsHeaders(\Symfony\Component\HttpFoundation\Response $response, ?Request $request = NULL) {
+    $allowedOrigins = [
+      'https://aezcrib.xyz',
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001',
+    ];
+
+    $origin = '';
+    if ($request) {
+      $origin = $request->headers->get('Origin', '');
+    } else {
+      $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    }
+
+    if (in_array($origin, $allowedOrigins)) {
+      $response->headers->set('Access-Control-Allow-Origin', $origin);
+    } else {
+      $response->headers->set('Access-Control-Allow-Origin', 'https://aezcrib.xyz');
+    }
+
+    $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-CSRF-Token');
+    $response->headers->set('Access-Control-Allow-Credentials', 'true');
+    $response->headers->set('Access-Control-Max-Age', '86400');
+
+    return $response;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
@@ -330,6 +363,147 @@ class WorksheetController extends ControllerBase {
       ]);
       
       return new JsonResponse(['error' => 'An error occurred while checking eligibility'], 500);
+    }
+  }
+
+  /**
+   * Upload a user-created worksheet.
+   * Expects multipart/form-data with fields:
+   * - title (string, required)
+   * - price (number, optional)
+   * - description (string, optional)
+   * - gradeLevel (string, optional)
+   * - subject (string, optional)
+   * - file (uploaded PDF, required)
+   * - thumbnail (uploaded image, optional)
+   *
+   * Rewards the author with 2 AezCoins and adds the worksheet to their owned list.
+   */
+  public function uploadUserWorksheet(Request $request) {
+    $user_id = $this->authenticateUser($request);
+    if (!$user_id) {
+      return new JsonResponse(['error' => 'User not authenticated'], 401);
+    }
+
+    try {
+      $title = trim($request->request->get('title', ''));
+      $price = $request->request->get('price', 0);
+      $description = $request->request->get('description', '');
+      $gradeLevel = $request->request->get('gradeLevel', 'pre-k');
+      $subject = $request->request->get('subject', '');
+
+      // Validate required
+      if (empty($title)) {
+        return new JsonResponse(['error' => 'Title is required'], 400);
+      }
+
+      $uploaded = $request->files->get('file');
+      if (!$uploaded) {
+        return new JsonResponse(['error' => 'Worksheet PDF (file) is required'], 400);
+      }
+
+      // Validate MIME type for PDF
+      $mime = $uploaded->getClientMimeType();
+      if (strpos($mime, 'pdf') === FALSE && $uploaded->getClientOriginalExtension() !== 'pdf') {
+        return new JsonResponse(['error' => 'Uploaded worksheet must be a PDF file'], 400);
+      }
+
+      // Save uploaded PDF as managed file
+      $original_name = preg_replace('/[^A-Za-z0-9._-]/', '_', $uploaded->getClientOriginalName());
+      $destination = 'public://worksheets/' . time() . '_' . $original_name;
+      $data = file_get_contents($uploaded->getRealPath());
+      $file = file_save_data($data, $destination, FILE_EXISTS_RENAME);
+      if (!$file) {
+        return new JsonResponse(['error' => 'Failed to save uploaded file'], 500);
+      }
+      // Ensure managed file is permanent
+      $file->setPermanent();
+      $file->save();
+
+      // Handle optional thumbnail
+      $thumbnail = $request->files->get('thumbnail');
+      $thumb_file = NULL;
+      if ($thumbnail) {
+        $thumb_name = preg_replace('/[^A-Za-z0-9._-]/', '_', $thumbnail->getClientOriginalName());
+        $thumb_dest = 'public://worksheets/thumbs/' . time() . '_' . $thumb_name;
+        $thumb_data = file_get_contents($thumbnail->getRealPath());
+        $thumb_file = file_save_data($thumb_data, $thumb_dest, FILE_EXISTS_RENAME);
+        if ($thumb_file) {
+          $thumb_file->setPermanent();
+          $thumb_file->save();
+        }
+      }
+
+      // Create worksheet node
+      $node_storage = $this->entityTypeManager()->getStorage('node');
+      $node_values = [
+        'type' => 'worksheets',
+        'title' => $title,
+        'status' => 1,
+      ];
+
+      // Price may be stored as integer field
+      if (is_numeric($price)) {
+        $node_values['field_worksheet_price'] = $price;
+      }
+
+      if (!empty($description)) {
+        $node_values['body'] = [[ 'value' => $description, 'format' => 'basic_html' ]];
+      }
+
+      if (!empty($gradeLevel)) {
+        $node_values['field_worksheet_level'] = $gradeLevel;
+      }
+      if (!empty($subject)) {
+        $node_values['field_worksheet_subject'] = $subject;
+      }
+
+      // Attach files if fields exist
+      $node = $node_storage->create($node_values);
+      if ($node->hasField('field_worksheet')) {
+        $node->set('field_worksheet', [
+          ['target_id' => $file->id()],
+        ]);
+      }
+      if ($thumb_file && $node->hasField('field_worksheet_image')) {
+        $node->set('field_worksheet_image', [
+          ['target_id' => $thumb_file->id()],
+        ]);
+      }
+
+      $node->save();
+
+      // Reward author with 2 AezCoins
+      try {
+        $this->creditService->addCredits($user_id, 2);
+      } catch (\Exception $e) {
+        // Log but continue
+        $this->getLogger('aezcrib_commerce')->warning('Failed to add credits to user @uid: @err', ['@uid' => $user_id, '@err' => $e->getMessage()]);
+      }
+
+      // Add worksheet to user's owned worksheets
+      $user = $this->entityTypeManager()->getStorage('user')->load($user_id);
+      if ($user && $user->hasField('field_worksheets_owned')) {
+        $owned = $user->get('field_worksheets_owned')->getValue();
+        $owned[] = ['target_id' => $node->id()];
+        $user->set('field_worksheets_owned', $owned);
+        $user->save();
+      }
+
+      return new JsonResponse([
+        'success' => TRUE,
+        'message' => 'Worksheet uploaded successfully',
+        'worksheet' => [
+          'id' => $node->id(),
+          'title' => $node->label(),
+          'price' => $node->hasField('field_worksheet_price') ? $node->get('field_worksheet_price')->value : 0,
+          'downloadUrl' => '/api/aezcrib/download/worksheet/' . $node->id(),
+        ],
+      ]);
+
+    } catch (\Exception $e) {
+      $this->getLogger('aezcrib_commerce')->error('Error uploading worksheet: @error', ['@error' => $e->getMessage()]);
+      return new JsonResponse(['error' => 'An error occurred while uploading worksheet'], 500);
     }
   }
 }

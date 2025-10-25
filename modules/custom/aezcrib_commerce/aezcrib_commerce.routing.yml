@@ -38,6 +38,14 @@ aezcrib_commerce.user_worksheets:
   requirements:
     _access: 'TRUE'
 
+aezcrib_commerce.upload_worksheet:
+  path: '/api/aezcrib/user/worksheets/upload'
+  defaults:
+    _controller: '\Drupal\aezcrib_commerce\Controller\WorksheetController::uploadUserWorksheet'
+  methods: [POST, OPTIONS]
+  requirements:
+    _access: 'TRUE'
+
 aezcrib_commerce.purchase_worksheet:
   path: '/api/aezcrib/purchase/worksheet/{worksheet_id}'
   defaults:
