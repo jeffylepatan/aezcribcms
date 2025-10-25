@@ -306,11 +306,57 @@ class AuthController extends ControllerBase {
       '@uid' => $this->currentUser->id(),
     ]);
 
+    // If the current user is anonymous, attempt to accept a session-id via
+    // Authorization: Bearer <sid> as a fallback for API clients that store the
+    // session id in localStorage and send it in the Authorization header.
     if ($this->currentUser->isAnonymous()) {
-      $response = new JsonResponse([
-        'message' => 'Not authenticated',
-      ], 401);
-      return $this->addCorsHeaders($response, $request);
+      $authHeader = $request->headers->get('Authorization', '');
+      $sid = '';
+      if (!empty($authHeader) && preg_match('/Bearer\s+(.+)/i', $authHeader, $matches)) {
+        $sid = $matches[1];
+      }
+
+      if (!empty($sid)) {
+        // Lookup sessions table for the provided sid to find the uid.
+        try {
+          $database = \Drupal::database();
+          $uid = $database->select('sessions', 's')
+            ->fields('s', ['uid'])
+            ->condition('sid', $sid)
+            ->range(0, 1)
+            ->execute()
+            ->fetchField();
+          if ($uid) {
+            // Found a matching session -> treat as authenticated for this request.
+            \Drupal::logger('aezcrib_auth')->notice('me() authenticated via Bearer sid for uid: @uid', ['@uid' => $uid]);
+            $user = User::load($uid);
+            if (!$user) {
+              $response = new JsonResponse([
+                'message' => 'User not found',
+              ], 404);
+              return $this->addCorsHeaders($response, $request);
+            }
+            // Continue and return user payload below.
+          } else {
+            // No session found for provided sid -> return unauthenticated
+            $response = new JsonResponse([
+              'message' => 'Not authenticated',
+            ], 401);
+            return $this->addCorsHeaders($response, $request);
+          }
+        } catch (\Exception $e) {
+          \Drupal::logger('aezcrib_auth')->error('Error looking up session sid in me(): @msg', ['@msg' => $e->getMessage()]);
+          $response = new JsonResponse([
+            'message' => 'Not authenticated',
+          ], 401);
+          return $this->addCorsHeaders($response, $request);
+        }
+      } else {
+        $response = new JsonResponse([
+          'message' => 'Not authenticated',
+        ], 401);
+        return $this->addCorsHeaders($response, $request);
+      }
     }
 
     \Drupal::logger('aezcrib_auth')->notice('Authenticated request by user ID: @uid', [
