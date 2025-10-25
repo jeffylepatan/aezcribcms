@@ -275,17 +275,33 @@ class PurchaseService {
    * Get download URL for a purchased worksheet.
    */
   public function getWorksheetDownloadUrl($user_id, $worksheet_id) {
+    \Drupal::logger('aezcrib_commerce')->info('Generating download URL for user @user_id and worksheet @worksheet_id', [
+      '@user_id' => $user_id,
+      '@worksheet_id' => $worksheet_id,
+    ]);
     // Check if user owns the worksheet
     if (!$this->userOwnsWorksheet($user_id, $worksheet_id)) {
       return NULL;
     }
+    \Drupal::logger('aezcrib_commerce')->info('User @user_id owns worksheet @worksheet_id', [
+      '@user_id' => $user_id,
+      '@worksheet_id' => $worksheet_id,
+    ]);
 
     $worksheet = $this->entityTypeManager->getStorage('node')->load($worksheet_id);
     
+    \Drupal::logger('aezcrib_commerce')->info('Loaded worksheet @worksheet_id for user @user_id', [
+      '@worksheet_id' => $worksheet_id,
+      '@user_id' => $user_id,
+    ]);
     if (!$worksheet || $worksheet->bundle() !== 'worksheet') {
       return NULL;
     }
 
+    \Drupal::logger('aezcrib_commerce')->info('Worksheet @worksheet_id is valid for user @user_id', [
+      '@worksheet_id' => $worksheet_id,
+      '@user_id' => $user_id,
+    ]);
     // Get the PDF file
     if ($worksheet->hasField('field_worksheet') && !$worksheet->get('field_worksheet')->isEmpty()) {
       $file = $worksheet->get('field_worksheet')->entity;
@@ -293,6 +309,10 @@ class PurchaseService {
         return file_create_url($file->getFileUri());
       }
     }
+    \Drupal::logger('aezcrib_commerce')->info('No file found for worksheet @worksheet_id for user @user_id', [
+      '@worksheet_id' => $worksheet_id,
+      '@user_id' => $user_id,
+    ]);
 
     return NULL;
   }
