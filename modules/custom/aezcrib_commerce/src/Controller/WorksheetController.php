@@ -412,8 +412,23 @@ class WorksheetController extends ControllerBase {
       $original_name = preg_replace('/[^A-Za-z0-9._-]/', '_', $uploaded->getClientOriginalName());
       $destination = 'public://worksheets/' . time() . '_' . $original_name;
       $data = \file_get_contents($uploaded->getRealPath());
+      // Ensure upload directories exist and are writable.
+      $file_system = \Drupal::service('file_system');
+      $worksheets_dir = 'public://worksheets';
+      $thumbs_dir = 'public://worksheets/thumbs';
+      // Create main directory (fatal if it fails).
+      if (!$file_system->prepareDirectory($worksheets_dir, \Drupal\Core\File\FileSystemInterface::CREATE_DIRECTORY | \Drupal\Core\File\FileSystemInterface::MODIFY_PERMISSIONS)) {
+        $this->getLogger('aezcrib_commerce')->error('Failed to prepare upload directory: @dir', ['@dir' => $worksheets_dir]);
+        return new JsonResponse(['error' => 'Failed to prepare upload directory'], 500);
+      }
+      // Try to prepare thumbs directory; non-fatal (thumbnail optional).
+      if (!$file_system->prepareDirectory($thumbs_dir, \Drupal\Core\File\FileSystemInterface::CREATE_DIRECTORY | \Drupal\Core\File\FileSystemInterface::MODIFY_PERMISSIONS)) {
+        $this->getLogger('aezcrib_commerce')->warning('Failed to prepare thumbnail directory: @dir', ['@dir' => $thumbs_dir]);
+      }
+
       // Use Drupal file.repository service to write managed file data.
-      $file = \Drupal::service('file.repository')->writeData($data, $destination, \FILE_EXISTS_RENAME);
+      $replace = defined('FILE_EXISTS_RENAME') ? \FILE_EXISTS_RENAME : 1;
+      $file = \Drupal::service('file.repository')->writeData($data, $destination, $replace);
       if (!$file) {
         return new JsonResponse(['error' => 'Failed to save uploaded file'], 500);
       }
@@ -428,7 +443,8 @@ class WorksheetController extends ControllerBase {
         $thumb_name = preg_replace('/[^A-Za-z0-9._-]/', '_', $thumbnail->getClientOriginalName());
         $thumb_dest = 'public://worksheets/thumbs/' . time() . '_' . $thumb_name;
         $thumb_data = \file_get_contents($thumbnail->getRealPath());
-        $thumb_file = \Drupal::service('file.repository')->writeData($thumb_data, $thumb_dest, \FILE_EXISTS_RENAME);
+        $thumb_replace = defined('FILE_EXISTS_RENAME') ? \FILE_EXISTS_RENAME : 1;
+        $thumb_file = \Drupal::service('file.repository')->writeData($thumb_data, $thumb_dest, $thumb_replace);
         if ($thumb_file) {
           $thumb_file->setPermanent();
           $thumb_file->save();
