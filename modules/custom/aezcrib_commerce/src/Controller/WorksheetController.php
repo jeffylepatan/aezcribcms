@@ -280,11 +280,12 @@ class WorksheetController extends ControllerBase {
         $file->getFilename()
       );
 
-      \Drupal::logger('aezcrib_commerce')->info('downloadWorksheet: Request Received for @real_path - @worksheet_id by @user_id', [
+      \Drupal::logger('aezcrib_commerce')->info('downloadWorksheet: Request Received for @real_path - @worksheet_id by @user_id - @download_url', [
         '@response' => 'File prepared for download',
         '@real_path' => $real_path,
         '@worksheet_id' => $worksheet_id,
         '@user_id' => $user_id,
+        '@download_url' => $download_url,
       ]);
 
       return $response;
