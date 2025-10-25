@@ -411,8 +411,8 @@ class WorksheetController extends ControllerBase {
       // Save uploaded PDF as managed file
       $original_name = preg_replace('/[^A-Za-z0-9._-]/', '_', $uploaded->getClientOriginalName());
       $destination = 'public://worksheets/' . time() . '_' . $original_name;
-      $data = file_get_contents($uploaded->getRealPath());
-      $file = file_save_data($data, $destination, FILE_EXISTS_RENAME);
+      $data = \file_get_contents($uploaded->getRealPath());
+      $file = \file_save_data($data, $destination, FILE_EXISTS_RENAME);
       if (!$file) {
         return new JsonResponse(['error' => 'Failed to save uploaded file'], 500);
       }
@@ -426,8 +426,8 @@ class WorksheetController extends ControllerBase {
       if ($thumbnail) {
         $thumb_name = preg_replace('/[^A-Za-z0-9._-]/', '_', $thumbnail->getClientOriginalName());
         $thumb_dest = 'public://worksheets/thumbs/' . time() . '_' . $thumb_name;
-        $thumb_data = file_get_contents($thumbnail->getRealPath());
-        $thumb_file = file_save_data($thumb_data, $thumb_dest, FILE_EXISTS_RENAME);
+        $thumb_data = \file_get_contents($thumbnail->getRealPath());
+        $thumb_file = \file_save_data($thumb_data, $thumb_dest, FILE_EXISTS_RENAME);
         if ($thumb_file) {
           $thumb_file->setPermanent();
           $thumb_file->save();
