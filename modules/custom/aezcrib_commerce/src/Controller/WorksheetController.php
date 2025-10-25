@@ -548,6 +548,23 @@ class WorksheetController extends ControllerBase {
         $user->save();
       }
 
+      // Create a free purchase transaction (amount 0) so the uploader can download the worksheet without paying.
+      try {
+        $transaction_storage = $this->entityTypeManager()->getStorage('node');
+        $transaction = $transaction_storage->create([
+          'type' => 'purchase_transaction',
+          'title' => 'Uploader Access - ' . $node->label() . ' - ' . date('Y-m-d H:i:s'),
+          'field_user_reference' => $user_id,
+          'field_worksheet_reference' => $node->id(),
+          'field_purchase_amount' => 0,
+          'field_purchase_status' => 'completed',
+          'status' => 1,
+        ]);
+        $transaction->save();
+      } catch (\Exception $e) {
+        $this->getLogger('aezcrib_commerce')->warning('Failed to create free purchase transaction for uploader @uid: @err', ['@uid' => $user_id, '@err' => $e->getMessage()]);
+      }
+
       return new JsonResponse([
         'success' => TRUE,
         'message' => 'Worksheet uploaded successfully',
