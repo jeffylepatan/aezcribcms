@@ -444,15 +444,15 @@ class WorksheetController extends ControllerBase {
         return new JsonResponse(['error' => 'Uploaded worksheet must be a PDF file'], 400);
       }
 
-  // Save uploaded PDF as managed file (per-user directory)
-  $original_name = preg_replace('/[^A-Za-z0-9._-]/', '_', $uploaded->getClientOriginalName());
-  $user_dir = 'public://user/' . $user_id . '/worksheets';
-  $destination = $user_dir . '/' . time() . '_' . $original_name;
-  $data = \file_get_contents($uploaded->getRealPath());
-  // Ensure upload directories exist and are writable.
-  $file_system = \Drupal::service('file_system');
-  $worksheets_dir = $user_dir;
-  $thumbs_dir = $user_dir . '/thumbs';
+      // Save uploaded PDF as managed file (per-user directory)
+      $original_name = preg_replace('/[^A-Za-z0-9._-]/', '_', $uploaded->getClientOriginalName());
+      $user_dir = 'public://user/' . $user_id . '/worksheets';
+      $destination = $user_dir . '/' . time() . '_' . $original_name;
+      $data = \file_get_contents($uploaded->getRealPath());
+      // Ensure upload directories exist and are writable.
+      $file_system = \Drupal::service('file_system');
+      $worksheets_dir = $user_dir;
+      $thumbs_dir = $user_dir . '/thumbs';
       // Create main directory (fatal if it fails).
       if (!$file_system->prepareDirectory($worksheets_dir, \Drupal\Core\File\FileSystemInterface::CREATE_DIRECTORY | \Drupal\Core\File\FileSystemInterface::MODIFY_PERMISSIONS)) {
         $this->getLogger('aezcrib_commerce')->error('Failed to prepare upload directory: @dir', ['@dir' => $worksheets_dir]);
@@ -477,11 +477,11 @@ class WorksheetController extends ControllerBase {
       $thumbnail = $request->files->get('thumbnail');
       $thumb_file = NULL;
       if ($thumbnail) {
-  $thumb_name = preg_replace('/[^A-Za-z0-9._-]/', '_', $thumbnail->getClientOriginalName());
-  $thumb_dest = $thumbs_dir . '/' . time() . '_' . $thumb_name;
-  $thumb_data = \file_get_contents($thumbnail->getRealPath());
-  $thumb_replace = defined('FILE_EXISTS_RENAME') ? \FILE_EXISTS_RENAME : 1;
-  $thumb_file = \Drupal::service('file.repository')->writeData($thumb_data, $thumb_dest, $thumb_replace);
+        $thumb_name = preg_replace('/[^A-Za-z0-9._-]/', '_', $thumbnail->getClientOriginalName());
+        $thumb_dest = $thumbs_dir . '/' . time() . '_' . $thumb_name;
+        $thumb_data = \file_get_contents($thumbnail->getRealPath());
+        $thumb_replace = defined('FILE_EXISTS_RENAME') ? \FILE_EXISTS_RENAME : 1;
+        $thumb_file = \Drupal::service('file.repository')->writeData($thumb_data, $thumb_dest, $thumb_replace);
         if ($thumb_file) {
           $thumb_file->setPermanent();
           $thumb_file->save();
@@ -502,7 +502,8 @@ class WorksheetController extends ControllerBase {
       }
 
       if (!empty($description)) {
-        $node_values['body'] = [[ 'value' => $description, 'format' => 'basic_html' ]];
+        // `field_worksheet_description` is a plain long text field — store as a string.
+        $node_values['field_worksheet_description'] = $description;
       }
 
       if (!empty($gradeLevel)) {
