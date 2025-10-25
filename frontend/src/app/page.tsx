@@ -417,7 +417,7 @@ export default function Home() {
                           alt={worksheet.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            e.currentTarget.src = '/api/placeholder/300/200';
+                            e.currentTarget.src = 'https://aezcrib.xyz/app/sites/default/files/assets/images/noImage.png';
                           }}
                         />
                       </div>
@@ -557,7 +557,7 @@ export default function Home() {
                           alt={video.title}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            e.currentTarget.src = '/api/placeholder/300/200';
+                            e.currentTarget.src = 'https://aezcrib.xyz/app/sites/default/files/assets/images/noImage.png';
                           }}
                         />
                         <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
