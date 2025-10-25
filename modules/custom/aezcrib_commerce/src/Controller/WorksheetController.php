@@ -266,9 +266,8 @@ class WorksheetController extends ControllerBase {
       // Get download URL
       $download_url = $this->purchaseService->getWorksheetDownloadUrl($user_id, $worksheet_id);
 
-      \Drupal::logger('aezcrib_commerce')->info('Download URL Check: Authenticated user @user_id and download URL @download_url', [
+      \Drupal::logger('aezcrib_commerce')->info('Download URL Check: Authenticated user @user_id', [
         '@user_id' => $user_id,
-        '@download_url' => $download_url,
       ]);
       
       if (!$download_url) {
@@ -280,10 +279,9 @@ class WorksheetController extends ControllerBase {
         return new JsonResponse(['error' => 'Worksheet file not found'], 404);
       }
 
-      // \Drupal::logger('aezcrib_commerce')->info('Download URL Passed: Authenticated user @user_id and download URL @download_url', [
-      //   '@user_id' => $user_id,
-      //   '@download_url' => $download_url,
-      // ]);
+      \Drupal::logger('aezcrib_commerce')->info('Download URL Passed: Authenticated user @user_id', [
+        '@user_id' => $user_id,
+      ]);
 
       // Load the worksheet to get the file
       $worksheet = $this->entityTypeManager()->getStorage('node')->load($worksheet_id);
