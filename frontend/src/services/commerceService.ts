@@ -86,6 +86,12 @@ interface RecommendationsResponse {
   error?: string;
 }
 
+interface UploadWorksheetResponse {
+  success: boolean;
+  worksheet?: UserWorksheet;
+  error?: string;
+}
+
 class CommerceService {
   private baseUrl: string;
 
@@ -243,6 +249,48 @@ class CommerceService {
   // Get personalized recommendations
   async getRecommendations(): Promise<RecommendationsResponse> {
     return this.makeRequest<RecommendationsResponse>('/api/aezcrib/recommendations');
+  }
+
+  // Upload a user-created worksheet (multipart/form-data)
+  // Assumption: backend exposes an endpoint at /api/aezcrib/user/worksheets/upload that accepts
+  // form-data with fields: title, price, description, gradeLevel, subject, file (pdf), thumbnail (image)
+  // The endpoint should set the authenticated user as author. If your backend endpoint differs,
+  // update the path or field names accordingly.
+  async uploadUserWorksheet(formData: FormData): Promise<UploadWorksheetResponse> {
+    const url = `${this.baseUrl}/api/aezcrib/user/worksheets/upload`;
+    const token = AuthService.getToken();
+
+    const options: RequestInit = {
+      method: 'POST',
+      body: formData,
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+        // NOTE: Do NOT set Content-Type for multipart/form-data; the browser will set the boundary.
+      },
+      credentials: 'include',
+    };
+
+    try {
+      const response = await fetch(url, options);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error(`Upload endpoint not found: ${url}`);
+        }
+        if (response.status === 403) {
+          throw new Error(`Access denied (403) when uploading worksheet`);
+        }
+        const text = await response.text().catch(() => null);
+        throw new Error(`HTTP error! status: ${response.status}. ${text ? `Server: ${text}` : ''}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        throw new Error(`Cannot connect to API at ${this.baseUrl}. Please check if the Drupal site is accessible and CORS is configured.`);
+      }
+      throw error;
+    }
   }
 }
 

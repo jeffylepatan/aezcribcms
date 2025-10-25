@@ -41,6 +41,16 @@ export default function DashboardPage() {
   const [filterSubject, setFilterSubject] = useState('all');
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [wsTitle, setWsTitle] = useState('');
+  const [wsFile, setWsFile] = useState<File | null>(null);
+  const [wsImage, setWsImage] = useState<File | null>(null);
+  const [wsPrice, setWsPrice] = useState('0');
+  const [wsDescription, setWsDescription] = useState('');
+  const [wsLevel, setWsLevel] = useState('pre-k');
+  const [wsSubject, setWsSubject] = useState('Language / Literacy');
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -229,7 +239,7 @@ Conversion Rate: ₱1 = 10 AezCoins`);
             <button
               onClick={handleLogout}
               className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:opacity-80 hover:scale-105"
-              style={{ color: '#5C6B73', backgroundColor: 'rgba(255, 255, 255, 0.7)' }}
+              style={{ color: '#1F2937', backgroundColor: 'rgba(255, 255, 255, 0.7)' }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(217, 247, 244, 0.8)')}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.7)')}
             >
@@ -270,10 +280,18 @@ Conversion Rate: ₱1 = 10 AezCoins`);
               <button
                 onClick={handleAddCredits}
                 className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:opacity-90 hover:scale-105"
-                style={{ backgroundColor: '#FFD166', color: '#5C6B73' }}
+                style={{ backgroundColor: '#FFD166', color: '#1F2937' }}
               >
                 <Plus className="h-4 w-4" />
-                <span>Add Credits</span>
+                <span>Donate to Add Credits</span>
+              </button>
+              <button
+                onClick={() => setShowUploadModal(true)}
+                className="ml-3 flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:opacity-90 hover:scale-105"
+                style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
+              >
+                <Users className="h-4 w-4" />
+                <span>Upload Worksheet</span>
               </button>
             </div>
           </div>
@@ -460,7 +478,7 @@ Conversion Rate: ₱1 = 10 AezCoins`);
                         placeholder="Search worksheets..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
+                        className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-[#5C6B73]"
                         style={{ borderColor: '#4BC0C8', backgroundColor: '#FFFFFF', color: '#5C6B73' }}
                       />
                     </div>
@@ -672,6 +690,179 @@ Conversion Rate: ₱1 = 10 AezCoins`);
         </div>
 
         {/* Low Credits Alert */}
+        {/* Upload Worksheet Modal */}
+        {showUploadModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div
+              className="absolute inset-0 bg-black/40"
+              onClick={() => { if (!uploading) { setShowUploadModal(false); setUploadError(null); } }}
+            />
+            <div className="relative bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 mx-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold" style={{ color: '#4BC0C8' }}>Upload Worksheet</h3>
+                <button
+                  onClick={() => { if (!uploading) { setShowUploadModal(false); setUploadError(null); } }}
+                  className="text-sm text-gray-500"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {uploadError && (
+                  <div className="text-sm text-red-700 bg-red-100 p-2 rounded">{uploadError}</div>
+                )}
+
+                <div>
+                  <label className="block text-sm mb-1" style={{ color: '#5C6B73' }}>Worksheet Name</label>
+                  <input
+                    type="text"
+                    value={wsTitle}
+                    onChange={(e) => setWsTitle(e.target.value)}
+                    className="w-full px-3 py-2 border rounded placeholder-[#5C6B73] font-medium text-gray-700"
+                    placeholder="e.g. Addition Practice Pack"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm mb-1" style={{ color: '#5C6B73' }}>Worksheet PDF (required)</label>
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0] ?? null;
+                      setWsFile(f);
+                    }}
+                    className="px-3 py-2 border rounded placeholder-[#5C6B73] font-medium text-gray-700"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm mb-1" style={{ color: '#5C6B73' }}>Worksheet Image (thumbnail)</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setWsImage(e.target.files?.[0] ?? null)}
+                    className="px-3 py-2 border rounded placeholder-[#5C6B73] font-medium text-gray-700"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm mb-1" style={{ color: '#5C6B73' }}>Pages</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={wsPrice}
+                      onChange={(e) => setWsPrice(e.target.value)}
+                      className="w-full px-3 py-2 border rounded placeholder-[#5C6B73] font-medium text-gray-700"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm mb-1" style={{ color: '#5C6B73' }}>Level</label>
+                    <select
+                      value={wsLevel}
+                      onChange={(e) => setWsLevel(e.target.value)}
+                      className="w-full px-3 py-3 border rounded placeholder-[#5C6B73] font-medium text-gray-700"
+                    >
+                      <option value="pre-k">pre-k</option>
+                      <option value="kindergarten">kindergarten</option>
+                      <option value="1st grade">1st grade</option>
+                      <option value="2nd grade">2nd grade</option>
+                      <option value="3rd grade">3rd grade</option>
+                      <option value="4th grade">4th grade</option>
+                      <option value="5th grade">5th grade</option>
+                      <option value="6th grade">6th grade</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm mb-1" style={{ color: '#5C6B73' }}>Subject</label>
+                  <select
+                    value={wsSubject}
+                    onChange={(e) => setWsSubject(e.target.value)}
+                    className="w-full px-3 py-2 border rounded placeholder-[#5C6B73] font-medium text-gray-700"
+                  >
+                    <option>Language / Literacy</option>
+                    <option>Math</option>
+                    <option>Science</option>
+                    <option>Social Studies</option>
+                    <option>Creative Arts</option>
+                    <option>Physical Education</option>
+                    <option>Practical Life Skills</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm mb-1" style={{ color: '#5C6B73' }}>Description</label>
+                  <textarea
+                    value={wsDescription}
+                    onChange={(e) => setWsDescription(e.target.value)}
+                    className="w-full px-3 py-2 border rounded placeholder-[#5C6B73] font-medium text-gray-700"
+                    rows={4}
+                  />
+                </div>
+
+                <div className="flex items-center justify-end space-x-2">
+                  <button
+                    onClick={() => { if (!uploading) { setShowUploadModal(false); setUploadError(null); } }}
+                    className="px-4 py-2 rounded bg-gray-100 text-gray-700"
+                    disabled={uploading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={async () => {
+                      // Basic validation
+                      setUploadError(null);
+                      if (!wsTitle.trim()) { setUploadError('Please provide a worksheet name.'); return; }
+                      if (!wsFile) { setUploadError('Please select a PDF file for the worksheet.'); return; }
+                      if (wsFile && wsFile.type !== 'application/pdf') { setUploadError('Worksheet must be a PDF file.'); return; }
+                      const priceNum = Number(wsPrice || 0);
+                      if (Number.isNaN(priceNum) || priceNum < 0) { setUploadError('Please provide a valid non-negative price.'); return; }
+
+                      try {
+                        setUploading(true);
+                        const form = new FormData();
+                        form.append('title', wsTitle);
+                        form.append('price', String(priceNum));
+                        form.append('description', wsDescription || '');
+                        form.append('gradeLevel', wsLevel);
+                        form.append('subject', wsSubject);
+                        form.append('file', wsFile as File);
+                        if (wsImage) form.append('thumbnail', wsImage);
+
+                        const res = await commerceService.uploadUserWorksheet(form as any);
+                        if (res && res.success) {
+                          // Close modal and refresh data
+                          setShowUploadModal(false);
+                          setWsTitle(''); setWsFile(null); setWsImage(null); setWsPrice('0'); setWsDescription(''); setWsLevel('pre-k'); setWsSubject('Language / Literacy');
+                          await fetchDashboardData();
+                          setActiveTab('worksheets');
+                          alert('Worksheet uploaded successfully. It may take a moment to appear in your library.');
+                        } else {
+                          setUploadError(res?.error || 'Upload failed.');
+                        }
+                      } catch (err) {
+                        console.error('Upload error:', err);
+                        setUploadError(err instanceof Error ? err.message : 'Upload failed');
+                      } finally {
+                        setUploading(false);
+                      }
+                    }}
+                    className="px-4 py-2 rounded font-medium"
+                    style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
+                    disabled={uploading}
+                  >
+                    {uploading ? 'Uploading...' : 'Submit Worksheet'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {credits < 50 && credits > 0 && (
           <div 
             className="fixed bottom-4 right-4 p-4 rounded-lg shadow-lg max-w-sm"
@@ -680,10 +871,10 @@ Conversion Rate: ₱1 = 10 AezCoins`);
             <div className="flex items-center space-x-2">
               <AlertCircle className="h-5 w-5" style={{ color: '#5C6B73' }} />
               <div>
-                <p className="font-medium text-sm" style={{ color: '#5C6B73' }}>
+                <p className="font-medium text-sm" style={{ color: '#1F2937' }}>
                   Low AezCoins Balance
                 </p>
-                <p className="text-xs" style={{ color: '#5C6B73', opacity: 0.8 }}>
+                <p className="text-xs" style={{ color: '#1F2937', opacity: 0.8 }}>
                   Add more credits to continue purchasing worksheets
                 </p>
               </div>
