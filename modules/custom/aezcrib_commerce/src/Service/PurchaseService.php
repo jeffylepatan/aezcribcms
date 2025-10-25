@@ -294,7 +294,7 @@ class PurchaseService {
       '@worksheet_id' => $worksheet_id,
       '@user_id' => $user_id,
     ]);
-    if (!$worksheet || $worksheet->bundle() !== 'worksheet') {
+    if (!$worksheet || $worksheet->bundle() !== 'worksheets') {
       return NULL;
     }
 
