@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { BookOpen, Users, PenTool, ArrowRight, Play, Download, Star, Heart, Mail, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import SafeImage from '@/components/SafeImage';
 
 // TypeScript interface for worksheet data from Drupal API
 interface WorksheetData {
@@ -256,15 +257,14 @@ export default function Home() {
                     {videos.length > 0 ? (
                       <>
                         {/* Image with explicit z-index */}
-                        <img 
-                          src={`https://aezcrib.xyz${videos[currentVideoIndex]?.field_video_thumbnail}`} 
+                        <SafeImage
+                          src={`https://aezcrib.xyz${videos[currentVideoIndex]?.field_video_thumbnail}`}
                           alt={videos[currentVideoIndex]?.title}
                           className="absolute inset-0 w-full h-full object-cover z-10"
                           onError={(e) => {
-                            console.log('Thumbnail failed to load:', e.currentTarget.src);
+                            // Keep same logging but SafeImage will handle fallback/hide
+                            console.log('Thumbnail failed to load:', (e as any).currentTarget?.src);
                             console.log('Original path:', videos[currentVideoIndex]?.field_video_thumbnail);
-                            // Hide the broken image and show gradient background
-                            e.currentTarget.style.display = 'none';
                           }}
                           onLoad={() => {
                             console.log('Thumbnail loaded successfully:', videos[currentVideoIndex]?.field_video_thumbnail);
@@ -413,13 +413,10 @@ export default function Home() {
                   worksheets.map((worksheet, index) => (
                     <div key={index} className="rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 flex flex-col" style={{ backgroundColor: '#FFFFFF' }}>
                       <div className="aspect-[3/2] bg-gray-200">
-                        <img 
-                          src={`https://aezcrib.xyz${worksheet.image}`} 
+                        <SafeImage
+                          src={`https://aezcrib.xyz${worksheet.image}`}
                           alt={worksheet.name}
                           className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://aezcrib.xyz/app/sites/default/files/assets/images/noImage.png';
-                          }}
                         />
                       </div>
                       <div className="p-6 flex flex-col flex-grow">
@@ -441,20 +438,11 @@ export default function Home() {
                         </p>
                         <div className="flex items-center justify-between mt-auto">
                           <div className="flex items-center text-sm" style={{ color: '#5C6B73' }}>
-                            <img 
-                              src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png" 
-                              alt="AezCoins" 
+                            <SafeImage
+                              src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png"
+                              alt="AezCoins"
                               className="w-4 h-4 mr-1"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                                const parent = e.currentTarget.parentElement;
-                                if (parent) {
-                                  const fallback = document.createElement('span');
-                                  fallback.textContent = '$';
-                                  fallback.className = 'font-semibold';
-                                  parent.insertBefore(fallback, e.currentTarget);
-                                }
-                              }}
+                              hideOnError
                             />
                             <span className="font-semibold">{worksheet.price}</span>
                           </div>
@@ -553,13 +541,10 @@ export default function Home() {
                   latestVideos.map((video, index) => (
                     <div key={index} className="rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 flex flex-col" style={{ backgroundColor: '#FFFFFF' }}>
                       <div className="relative aspect-video bg-gray-200">
-                        <img 
-                          src={`https://aezcrib.xyz${video.field_video_thumbnail}`} 
+                        <SafeImage
+                          src={`https://aezcrib.xyz${video.field_video_thumbnail}`}
                           alt={video.title}
                           className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://aezcrib.xyz/app/sites/default/files/assets/images/noImage.png';
-                          }}
                         />
                         <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                           <button
@@ -620,7 +605,7 @@ export default function Home() {
                   Ready to Transform Learning Time? 🌟
                 </h2>
                 <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
-                  Join over 10,000 families who've discovered the joy of learning with AezCrib. 
+                  Join parents who've discovered the joy of learning with AezCrib. 
                   Start your educational adventure today!
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -629,7 +614,7 @@ export default function Home() {
                     className="px-10 py-5 rounded-xl font-bold text-lg transition-all transform hover:scale-105"
                     style={{ backgroundColor: '#FFD166', color: '#5C6B73' }}
                   >
-                    Start Free Trial 🎉
+                    Free Registration 🎉
                   </Link>
                   <Link
                     href="/worksheets"

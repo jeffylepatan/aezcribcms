@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { Play, Search, Filter, X, ArrowUpDown, Grid3X3, List, ExternalLink } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
+import SafeImage from '@/components/SafeImage';
 
 // TypeScript interface for video data from Drupal API
 interface VideoData {
@@ -393,13 +394,10 @@ export default function VideosPage() {
                   filteredVideos.map((video, index) => (
                     <div key={index} className="rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 flex flex-col" style={{ backgroundColor: '#FFFFFF' }}>
                       <div className="relative aspect-video bg-gray-200">
-                        <img 
-                          src={`https://aezcrib.xyz${video.videoThumbnail}`} 
+                        <SafeImage
+                          src={`https://aezcrib.xyz${video.videoThumbnail}`}
                           alt={video.title}
                           className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://aezcrib.xyz/app/sites/default/files/assets/images/noImage.png';
-                          }}
                         />
                         <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                           <button
@@ -519,13 +517,10 @@ export default function VideosPage() {
                           <tr key={index} className="border-t hover:bg-gray-50 transition-colors" style={{ borderColor: '#E2E8F0' }}>
                             <td className="px-6 py-4">
                               <div className="w-24 h-16 bg-gray-200 rounded overflow-hidden relative">
-                                <img 
-                                  src={`https://aezcrib.xyz${video.videoThumbnail}`} 
+                                <SafeImage
+                                  src={`https://aezcrib.xyz${video.videoThumbnail}`}
                                   alt={video.title}
                                   className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    e.currentTarget.src = '/api/placeholder/96/64';
-                                  }}
                                 />
                                 <div className="absolute inset-0 flex items-center justify-center">
                                   <Play className="w-4 h-4 text-white opacity-80" />
