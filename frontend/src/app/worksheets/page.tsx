@@ -662,7 +662,7 @@ export default function WorksheetsPage() {
                                   alt={worksheet.name}
                                   className="w-full h-full object-cover"
                                   onError={(e) => {
-                                    e.currentTarget.src = '/api/placeholder/64/48';
+                                    e.currentTarget.src = 'https://aezcrib.xyz/app/sites/default/files/assets/images/noImage.png';
                                   }}
                                 />
                               </div>
