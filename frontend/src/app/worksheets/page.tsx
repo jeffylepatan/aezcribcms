@@ -41,6 +41,8 @@ export default function WorksheetsPage() {
   
   // Layout state
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  // Pagination / load more
+  const [visibleCount, setVisibleCount] = useState(12);
 
   // Fetch worksheets from Drupal API
   useEffect(() => {
@@ -172,6 +174,11 @@ export default function WorksheetsPage() {
     setSortBy('');
     setSortOrder('asc');
   };
+
+  // Reset visible count when filters or sorting change
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [searchKeyword, selectedSubject, selectedLevel, selectedPriceFilter, sortBy, sortOrder]);
 
   const hasActiveFilters = searchKeyword || selectedSubject || selectedLevel || selectedPriceFilter || sortBy;
 
@@ -402,7 +409,8 @@ export default function WorksheetsPage() {
         <section className="py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {viewMode === 'cards' ? (
-              /* Card Layout */
+              <>
+              {/* Card Layout */}
               <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {loading ? (
                   // Loading skeleton for cards
@@ -455,7 +463,7 @@ export default function WorksheetsPage() {
                   </div>
                 ) : (
                   // Actual worksheet cards
-                  filteredWorksheets.map((worksheet, index) => (
+                  filteredWorksheets.slice(0, visibleCount).map((worksheet, index) => (
                     <div key={index} className="rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 flex flex-col" style={{ backgroundColor: '#FFFFFF' }}>
                       <div className="aspect-[3/2] bg-gray-200">
                         <img 
@@ -557,6 +565,19 @@ export default function WorksheetsPage() {
                   ))
                 )}
               </div>
+              {/* Load more button */}
+              {filteredWorksheets.length > visibleCount && (
+                <div className="col-span-full text-center mt-8">
+                  <button
+                    onClick={() => setVisibleCount((c) => c + 12)}
+                    className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105 shadow-md"
+                    style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
+                  >
+                    Load more
+                  </button>
+                </div>
+              )}
+              </>
             ) : (
               /* Table Layout */
               <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -615,7 +636,7 @@ export default function WorksheetsPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredWorksheets.map((worksheet, index) => (
+                        {filteredWorksheets.slice(0, visibleCount).map((worksheet, index) => (
                           <tr key={index} className="border-t hover:bg-gray-50 transition-colors" style={{ borderColor: '#E2E8F0' }}>
                             <td className="px-6 py-4">
                               <div className="w-16 h-12 bg-gray-200 rounded overflow-hidden">
