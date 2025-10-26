@@ -604,9 +604,13 @@ export default function WorksheetsPage() {
                                     toast.error(`Purchase failed: ${purchaseData?.error || 'Unknown error'}`);
                                     return;
                                   }
-                                  // Deduct credits and update worksheet ownership (handled by backend)
+                                  // Update local state and refresh dashboard data so UI updates without full reload
                                   toast.success('Purchase successful! The worksheet has been added to your library and your credits have been updated.');
-                                  window.location.reload();
+                                  try {
+                                    await fetchDashboardData();
+                                  } catch (err) {
+                                    console.error('Failed to refresh dashboard data after purchase:', err);
+                                  }
                                 } catch (err) {
                                   toast.error('An error occurred during purchase. Please try again.');
                                 }
