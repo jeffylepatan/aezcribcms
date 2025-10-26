@@ -204,7 +204,7 @@ export default function Home() {
                     </p>
                     <Link
                       href="/dashboard"
-                      className="inline-flex items-center px-8 py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-105"
+                      className="inline-flex items-center px-6 py-3 md:px-8 md:py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-105"
                       style={{ backgroundColor: '#FFFFFF', color: '#4BC0C8', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
                     >
                       Continue Learning
@@ -215,14 +215,14 @@ export default function Home() {
                   <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
                     <Link
                       href="/register"
-                      className="px-10 py-5 rounded-xl font-bold text-lg transition-all transform hover:scale-105"
+                      className="px-6 py-3 md:px-10 md:py-5 rounded-xl font-bold text-lg transition-all transform hover:scale-105"
                       style={{ backgroundColor: '#FFFFFF', color: '#4BC0C8', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
                     >
                       Start Transitioning Today! 🚀
                     </Link>
                     <Link
                       href="#showcase"
-                      className="border-3 text-white px-10 py-5 rounded-xl font-bold text-lg hover:bg-white hover:text-gray-800 transition-all"
+                      className="border-3 text-white px-6 py-3 md:px-10 md:py-5 rounded-xl font-bold text-lg hover:bg-white hover:text-gray-800 transition-all"
                       style={{ borderColor: '#FFFFFF', borderWidth: '3px' }}
                     >
                       See It In Action ▶️
@@ -249,10 +249,10 @@ export default function Home() {
 
             {/* Video Carousel */}
             <div className="relative max-w-4xl mx-auto">
-              <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ backgroundColor: '#FFFFFF' }}>
+                <div className="rounded-2xl overflow-hidden shadow-2xl" style={{ backgroundColor: '#FFFFFF' }}>
                 <div className="relative">
                   {/* Video Thumbnail */}
-                  <div className="aspect-video bg-gray-200 relative group cursor-pointer"
+                          <div className="aspect-video bg-gray-200 relative group cursor-pointer"
                        onClick={() => videos[currentVideoIndex] && openVideoModal(videos[currentVideoIndex])}>
                     {videos.length > 0 ? (
                       <>
@@ -263,11 +263,11 @@ export default function Home() {
                           className="absolute inset-0 w-full h-full object-cover z-10"
                           onError={(e) => {
                             // Keep same logging but SafeImage will handle fallback/hide
-                            console.log('Thumbnail failed to load:', (e as any).currentTarget?.src);
-                            console.log('Original path:', videos[currentVideoIndex]?.field_video_thumbnail);
+                            try { console.log('Thumbnail failed to load:', (e as any).currentTarget?.src); } catch {}
+                            try { console.log('Original path:', videos[currentVideoIndex]?.field_video_thumbnail); } catch {}
                           }}
                           onLoad={() => {
-                            console.log('Thumbnail loaded successfully:', videos[currentVideoIndex]?.field_video_thumbnail);
+                            try { console.log('Thumbnail loaded successfully:', videos[currentVideoIndex]?.field_video_thumbnail); } catch {}
                           }}
                         />
                         {/* Fallback gradient background */}
@@ -278,10 +278,11 @@ export default function Home() {
                         {/* Overlay that appears on hover - higher z-index */}
                         <div className="absolute inset-0 bg-transparent flex items-center justify-center transition-all duration-300 z-20">
                           <button 
-                            className="w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 opacity-60 group-hover:opacity-100 group-hover:scale-110" 
+                            className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-all duration-300 opacity-60 group-hover:opacity-100 group-hover:scale-110" 
                             style={{ backgroundColor: '#FFD166' }}
+                            aria-label="Play video"
                           >
-                            <Play className="w-8 h-8 ml-1" style={{ color: '#5C6B73' }} />
+                            <Play className="w-6 md:w-8 h-6 md:h-8 ml-1" style={{ color: '#5C6B73' }} />
                           </button>
                         </div>
                       </>
@@ -298,14 +299,16 @@ export default function Home() {
                   {/* Navigation Arrows */}
                   <button 
                     onClick={prevVideo}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-110 z-30"
+                    aria-label="Previous video"
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all hover:scale-110 z-30"
                     style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)' }}
                   >
                     <ChevronLeft className="w-6 h-6" style={{ color: '#5C6B73' }} />
                   </button>
                   <button 
                     onClick={nextVideo}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-all hover:scale-110 z-30"
+                    aria-label="Next video"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all hover:scale-110 z-30"
                     style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)' }}
                   >
                     <ChevronRight className="w-6 h-6" style={{ color: '#5C6B73' }} />
@@ -313,8 +316,8 @@ export default function Home() {
                 </div>
                 
                 {/* Video Info */}
-                <div className="p-8">
-                  <h3 className="text-2xl font-bold mb-3" style={{ color: '#5C6B73' }}>
+                <div className="p-6 md:p-8">
+                              <h3 className="text-2xl font-bold mb-3" style={{ color: '#5C6B73' }}>
                     {videos.length > 0 ? videos[currentVideoIndex]?.title : 'Loading Videos...'}
                   </h3>
                   <p className="text-lg" style={{ color: '#5C6B73' }}>
@@ -333,7 +336,8 @@ export default function Home() {
                   <button
                     key={index}
                     onClick={() => setCurrentVideoIndex(index)}
-                    className={`w-3 h-3 rounded-full transition-all ${
+                    aria-label={`Go to video ${index + 1}`}
+                    className={`w-3 h-3 rounded-full transition-all p-2 md:p-0 ${
                       index === currentVideoIndex ? 'scale-125' : 'opacity-50 hover:opacity-75'
                     }`}
                     style={{ backgroundColor: '#4BC0C8' }}
@@ -442,7 +446,7 @@ export default function Home() {
                               src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png"
                               alt="AezCoins"
                               className="w-4 h-4 mr-1"
-                              hideOnError
+                              textFallback="Ac"
                             />
                             <span className="font-semibold">{worksheet.price}</span>
                           </div>
