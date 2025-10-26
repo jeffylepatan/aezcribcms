@@ -44,6 +44,8 @@ export default function WorksheetsPage() {
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   // Pagination / load more
   const [visibleCount, setVisibleCount] = useState(12);
+  // Track which worksheet is currently being purchased to disable its Buy button
+  const [purchasingId, setPurchasingId] = useState<string | null>(null);
 
   // Fetch worksheets from Drupal API
   useEffect(() => {
@@ -586,6 +588,7 @@ export default function WorksheetsPage() {
                                   window.location.href = '/login';
                                   return;
                                 }
+                                setPurchasingId(worksheet.worksheetId);
                                 try {
                                   // Fetch current user credits
                                   const creditsData = await commerceService.getCredits();
@@ -613,12 +616,15 @@ export default function WorksheetsPage() {
                                   }
                                 } catch (err) {
                                   toast.error('An error occurred during purchase. Please try again.');
+                                } finally {
+                                  setPurchasingId(null);
                                 }
                               }}
-                              className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105 shadow-md"
+                              disabled={purchasingId === worksheet.worksheetId}
+                              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105 shadow-md ${purchasingId === worksheet.worksheetId ? 'opacity-60 cursor-not-allowed hover:scale-100' : ''}`}
                               style={{ backgroundColor: '#FFD166', color: '#2D3748' }}
                             >
-                              Buy
+                              {purchasingId === worksheet.worksheetId ? 'Purchasing...' : 'Buy'}
                             </button>
                           )}
                         </div>
