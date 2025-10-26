@@ -23,6 +23,7 @@ interface WorksheetData {
 export default function WorksheetsPage() {
   // Credits state
   const { user, isAuthenticated } = useAuth();
+  const [credits, setCredits] = useState<number>(0);
   const [worksheets, setWorksheets] = useState<WorksheetData[]>([]);
   const [purchasedWorksheets, setPurchasedWorksheets] = useState<UserWorksheet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,6 +95,15 @@ export default function WorksheetsPage() {
       const worksheetsResponse = await commerceService.getUserWorksheets();
       if (worksheetsResponse.success) {
         setPurchasedWorksheets(worksheetsResponse.worksheets);
+      }
+      // Fetch current user credits
+      try {
+        const creditsResponse = await commerceService.getCredits();
+        if (creditsResponse && typeof creditsResponse.credits !== 'undefined') {
+          setCredits(Number(creditsResponse.credits) || 0);
+        }
+      } catch (err) {
+        console.error('Error fetching credits:', err);
       }
     } catch (error) {
       console.error('Error fetching User Worksheet data:', error);
@@ -228,6 +238,31 @@ export default function WorksheetsPage() {
             </div>
           </div>
         </section>
+
+        {/* Floating Credits Block */}
+        <div className="fixed bottom-6 right-6 z-50">
+          <div className="flex items-center space-x-3 px-4 py-3 rounded-xl shadow-lg hover:shadow-2xl transition-all bg-white border border-gray-100">
+            <img
+              src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png"
+              alt="AezCoins"
+              className="w-6 h-6"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            />
+            <div className="text-sm text-gray-800">
+              {isAuthenticated ? (
+                <>
+                  <div className="font-semibold">{credits.toLocaleString()} AezCoins</div>
+                  <div className="text-xs text-gray-600">Available balance</div>
+                </>
+              ) : (
+                <div className="flex flex-col">
+                  <span className="font-semibold">Login to view</span>
+                  <a href="/login" className="text-xs text-blue-600 hover:underline">Login</a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* Search and Filters Section */}
         <section className="py-8 bg-white shadow-sm">
