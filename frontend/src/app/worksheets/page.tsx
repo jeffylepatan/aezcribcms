@@ -249,7 +249,7 @@ export default function WorksheetsPage() {
               src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png"
               alt="AezCoins"
               className="w-6 h-6"
-              hideOnError
+              textFallback="Ac"
             />
             <div className="text-sm text-gray-800">
               {isAuthenticated ? (
@@ -556,7 +556,7 @@ export default function WorksheetsPage() {
                               src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png"
                               alt="AezCoins"
                               className="w-4 h-4 mr-1"
-                              hideOnError
+                              textFallback="Ac"
                             />
                             <span className="font-semibold">{worksheet.price}</span>
                           </div>
@@ -726,7 +726,7 @@ export default function WorksheetsPage() {
                                   src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png"
                                   alt="AezCoins"
                                   className="w-4 h-4 mr-1"
-                                  hideOnError
+                                  textFallback="Ac"
                                 />
                                 <span className="font-semibold">{worksheet.price}</span>
                               </div>
