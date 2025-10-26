@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Search, Filter, X, ArrowUpDown, Grid3X3, List } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import toast from 'react-hot-toast';
+import SafeImage from '@/components/SafeImage';
 
 // TypeScript interface for worksheet data from Drupal API
 interface WorksheetData {
@@ -244,11 +245,11 @@ export default function WorksheetsPage() {
         {/* Floating Credits Block */}
         <div className="fixed bottom-6 right-6 z-50">
           <div className="flex items-center space-x-3 px-4 py-3 rounded-xl shadow-lg hover:shadow-2xl transition-all bg-white border border-gray-100">
-            <img
+            <SafeImage
               src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png"
               alt="AezCoins"
               className="w-6 h-6"
-              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              hideOnError
             />
             <div className="text-sm text-gray-800">
               {isAuthenticated ? (
@@ -526,13 +527,10 @@ export default function WorksheetsPage() {
                   filteredWorksheets.slice(0, visibleCount).map((worksheet, index) => (
                     <div key={index} className="rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2 flex flex-col" style={{ backgroundColor: '#FFFFFF' }}>
                       <div className="aspect-[3/2] bg-gray-200">
-                        <img 
-                          src={`https://aezcrib.xyz${worksheet.image}`} 
+                        <SafeImage
+                          src={`https://aezcrib.xyz${worksheet.image}`}
                           alt={worksheet.name}
                           className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://aezcrib.xyz/app/sites/default/files/assets/images/noImage.png';
-                          }}
                         />
                       </div>
                       <div className="p-6 flex flex-col flex-grow">
@@ -554,20 +552,11 @@ export default function WorksheetsPage() {
                         </p>
                         <div className="flex items-center justify-between mt-auto">
                           <div className="flex items-center text-sm" style={{ color: '#2D3748' }}>
-                            <img 
-                              src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png" 
-                              alt="AezCoins" 
+                            <SafeImage
+                              src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png"
+                              alt="AezCoins"
                               className="w-4 h-4 mr-1"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                                const parent = e.currentTarget.parentElement;
-                                if (parent) {
-                                  const fallback = document.createElement('span');
-                                  fallback.textContent = '$';
-                                  fallback.className = 'font-semibold';
-                                  parent.insertBefore(fallback, e.currentTarget);
-                                }
-                              }}
+                              hideOnError
                             />
                             <span className="font-semibold">{worksheet.price}</span>
                           </div>
@@ -702,13 +691,10 @@ export default function WorksheetsPage() {
                           <tr key={index} className="border-t hover:bg-gray-50 transition-colors" style={{ borderColor: '#E2E8F0' }}>
                             <td className="px-6 py-4">
                               <div className="w-16 h-12 bg-gray-200 rounded overflow-hidden">
-                                <img 
-                                  src={`https://aezcrib.xyz${worksheet.image}`} 
+                                <SafeImage
+                                  src={`https://aezcrib.xyz${worksheet.image}`}
                                   alt={worksheet.name}
                                   className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    e.currentTarget.src = 'https://aezcrib.xyz/app/sites/default/files/assets/images/noImage.png';
-                                  }}
                                 />
                               </div>
                             </td>
@@ -736,20 +722,11 @@ export default function WorksheetsPage() {
                             </td>
                             <td className="px-6 py-4">
                               <div className="flex items-center text-sm" style={{ color: '#2D3748' }}>
-                                <img 
-                                  src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png" 
-                                  alt="AezCoins" 
+                                <SafeImage
+                                  src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png"
+                                  alt="AezCoins"
                                   className="w-4 h-4 mr-1"
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = 'none';
-                                    const parent = e.currentTarget.parentElement;
-                                    if (parent) {
-                                      const fallback = document.createElement('span');
-                                      fallback.textContent = '$';
-                                      fallback.className = 'font-semibold';
-                                      parent.insertBefore(fallback, e.currentTarget);
-                                    }
-                                  }}
+                                  hideOnError
                                 />
                                 <span className="font-semibold">{worksheet.price}</span>
                               </div>
