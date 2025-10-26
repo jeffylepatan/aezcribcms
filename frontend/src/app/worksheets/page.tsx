@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { Search, Filter, X, ArrowUpDown, Grid3X3, List } from 'lucide-react';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import toast from 'react-hot-toast';
 
 // TypeScript interface for worksheet data from Drupal API
@@ -179,6 +179,29 @@ export default function WorksheetsPage() {
   useEffect(() => {
     setVisibleCount(12);
   }, [searchKeyword, selectedSubject, selectedLevel, selectedPriceFilter, sortBy, sortOrder]);
+
+  // Infinite scroll sentinel
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+    if (!sentinel) return;
+    if (visibleCount >= filteredWorksheets.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleCount((c) => Math.min(filteredWorksheets.length, c + 8));
+          }
+        });
+      },
+      { root: null, rootMargin: '200px', threshold: 0.1 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [filteredWorksheets.length, visibleCount]);
 
   const hasActiveFilters = searchKeyword || selectedSubject || selectedLevel || selectedPriceFilter || sortBy;
 
@@ -567,14 +590,8 @@ export default function WorksheetsPage() {
               </div>
               {/* Load more button */}
               {filteredWorksheets.length > visibleCount && (
-                <div className="col-span-full text-center mt-8">
-                  <button
-                    onClick={() => setVisibleCount((c) => c + 12)}
-                    className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105 shadow-md"
-                    style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
-                  >
-                    Load more
-                  </button>
+                <div ref={loadMoreRef} className="col-span-full text-center mt-8" aria-hidden="true">
+                  <span className="text-sm text-gray-600">Loading more…</span>
                 </div>
               )}
               </>
