@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { BookOpen, Users, PenTool, ArrowRight, Play, Download, Star, Heart, Mail, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 // TypeScript interface for worksheet data from Drupal API
 interface WorksheetData {
@@ -475,7 +476,7 @@ export default function Home() {
                                   window.location.href = '/login';
                                 } else {
                                   // Handle purchase logic here
-                                  alert('Purchase functionality coming soon!');
+                                  toast('Purchase functionality coming soon!');
                                 }
                               }}
                               className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105"

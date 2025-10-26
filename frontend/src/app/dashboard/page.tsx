@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -109,14 +110,7 @@ export default function DashboardPage() {
   const handleAddCredits = () => {
     // For now, we'll show an alert with instructions
     // In the future, this could open a modal or navigate to a donation page
-    alert(`To add AezCoins:
-    
-1. Send money via GCash to [Your GCash Number]
-2. Take a screenshot of the receipt
-3. Contact support with your receipt
-4. Credits will be added manually within 24 hours
-
-Conversion Rate: ₱1 = 10 AezCoins`);
+  toast(`To add AezCoins:\n\n1. Send money via GCash to [Your GCash Number]\n2. Take a screenshot of the receipt\n3. Contact support with your receipt\n4. Credits will be added manually within 24 hours\n\nConversion Rate: ₱1 = 10 AezCoins`, { duration: 10000 });
   };
 
   const handleDownloadWorksheet = async (worksheetId: number, title: string) => {
@@ -134,7 +128,7 @@ Conversion Rate: ₱1 = 10 AezCoins`);
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download failed:', error);
-      alert('Failed to download worksheet. Please try again.');
+      toast.error('Failed to download worksheet. Please try again.');
     }
   };
 
@@ -841,7 +835,7 @@ Conversion Rate: ₱1 = 10 AezCoins`);
                           setWsTitle(''); setWsFile(null); setWsImage(null); setWsPrice('0'); setWsDescription(''); setWsLevel('pre_k'); setWsSubject('language_literacy');
                           await fetchDashboardData();
                           setActiveTab('worksheets');
-                          alert('Worksheet uploaded successfully. It may take a moment to appear in your library.');
+                          toast.success('Worksheet uploaded successfully. It may take a moment to appear in your library.');
                         } else {
                           setUploadError(res?.error || 'Upload failed.');
                         }

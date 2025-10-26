@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { Search, Filter, X, ArrowUpDown, Grid3X3, List } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import toast from 'react-hot-toast';
 
 // TypeScript interface for worksheet data from Drupal API
 interface WorksheetData {
@@ -527,21 +528,21 @@ export default function WorksheetsPage() {
                                   console.log('User Credits:', userCredits);
                                   console.log('Worksheet Price:', worksheetPrice);
                                   if (userCredits < worksheetPrice) {
-                                    alert('Insufficient AezCoins. Please add more credits to purchase this worksheet.');
+                                    toast.error('Insufficient AezCoins. Please add more credits to purchase this worksheet.');
                                     return;
                                   }
                                   // Call purchase API (commerceService returns parsed response)
                                   const purchaseData = await commerceService.purchaseWorksheet(parseInt(worksheet.worksheetId, 10));
                                   if (!purchaseData || !purchaseData.success) {
                                     console.error('Purchase API Response:', purchaseData);
-                                    alert(`Purchase failed: ${purchaseData?.error || 'Unknown error'}`);
+                                    toast.error(`Purchase failed: ${purchaseData?.error || 'Unknown error'}`);
                                     return;
                                   }
                                   // Deduct credits and update worksheet ownership (handled by backend)
-                                  alert('Purchase successful! The worksheet has been added to your library and your credits have been updated.');
+                                  toast.success('Purchase successful! The worksheet has been added to your library and your credits have been updated.');
                                   window.location.reload();
                                 } catch (err) {
-                                  alert('An error occurred during purchase. Please try again.');
+                                  toast.error('An error occurred during purchase. Please try again.');
                                 }
                               }}
                               className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105 shadow-md"
@@ -687,7 +688,7 @@ export default function WorksheetsPage() {
                                     if (!isAuthenticated) {
                                       window.location.href = '/login';
                                     } else {
-                                      alert('Purchase functionality coming soon!');
+                                      toast('Purchase functionality coming soon!');
                                     }
                                   }}
                                   className="px-3 py-1 rounded-lg font-semibold text-xs transition-all hover:scale-105"
