@@ -221,7 +221,7 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex md:flex-wrap flex-wrap-reverse items-center md:justify-between justify-end">
             <div>
               <h1 className="text-3xl font-bold mb-2" style={{ color: '#4BC0C8' }}>
                 Welcome back, {greetingName}! 🌟
@@ -232,7 +232,7 @@ export default function DashboardPage() {
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:opacity-80 hover:scale-105"
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:opacity-80 hover:scale-105 mb-4 md:mb-0"
               style={{ color: '#1F2937', backgroundColor: 'rgba(255, 255, 255, 0.7)' }}
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(217, 247, 244, 0.8)')}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.7)')}
@@ -246,11 +246,11 @@ export default function DashboardPage() {
         {/* Credits Card */}
         <div className="mb-8">
           <div 
-            className="rounded-xl shadow-lg p-6 backdrop-blur-sm border border-white/20"
+            className="rounded-xl shadow-lg p-4 md:p-6 backdrop-blur-sm border border-white/20"
             style={{ backgroundColor: 'rgba(75, 192, 200, 0.1)' }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+            <div className="flex flex-wrap items-center md:justify-between justify-center">
+              <div className="flex items-center space-x-4 mb-4 md:mb-0">
                 <div 
                   className="p-3 rounded-full"
                   style={{ backgroundColor: '#FFD166' }}
@@ -273,7 +273,7 @@ export default function DashboardPage() {
               </div>
               <button
                 onClick={handleAddCredits}
-                className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:opacity-90 hover:scale-105"
+                className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:opacity-90 hover:scale-105 mb-4 md:mb-0"
                 style={{ backgroundColor: '#FFD166', color: '#1F2937' }}
               >
                 <Plus className="h-4 w-4" />
@@ -281,7 +281,7 @@ export default function DashboardPage() {
               </button>
               <button
                 onClick={() => setShowUploadModal(true)}
-                className="ml-3 flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:opacity-90 hover:scale-105"
+                className="ml-3 flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:opacity-90 hover:scale-105 mb-4 md:mb-0"
                 style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
               >
                 <Users className="h-4 w-4" />
@@ -296,7 +296,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <Link
               href="/worksheets"
-              className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-6 border border-white/20 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
+              className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-4 md:p-6 border border-white/20 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
             >
               <div className="flex items-center space-x-4">
                 <div 
@@ -316,7 +316,7 @@ export default function DashboardPage() {
               </div>
             </Link>
 
-            <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-6 border border-white/20">
+            <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-4 md:p-6 border border-white/20">
               <div className="flex items-center space-x-4">
                 <div 
                   className="p-3 rounded-full"
@@ -335,7 +335,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-6 border border-white/20">
+            <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-4 md:p-6 border border-white/20">
               <div className="flex items-center space-x-4">
                 <div 
                   className="p-3 rounded-full"
@@ -366,7 +366,7 @@ export default function DashboardPage() {
 
         {/* Navigation Tabs */}
         <div className="mb-8">
-          <div className="flex space-x-1 bg-white/50 backdrop-blur-sm p-1 rounded-lg">
+          <div className="flex flex-wrap sm:flex-nowrap gap-1 bg-white/50 backdrop-blur-sm p-1 rounded-lg">
             {[
               { id: 'overview', label: 'Overview', icon: TrendingUp },
               { id: 'worksheets', label: 'My Worksheets', icon: FileText },
@@ -402,7 +402,7 @@ export default function DashboardPage() {
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Stats Cards */}
-              <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-6 border border-white/20">
+              <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-4 md:p-6 border border-white/20">
                 <div className="flex items-center space-x-3">
                   <FileText className="h-8 w-8" style={{ color: '#4BC0C8' }} />
                   <div>
@@ -416,7 +416,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-6 border border-white/20">
+              <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-4 md:p-6 border border-white/20">
                 <div className="flex items-center space-x-3">
                   <Calendar className="h-8 w-8" style={{ color: '#4BC0C8' }} />
                   <div>
@@ -459,7 +459,7 @@ export default function DashboardPage() {
           {/* My Worksheets Tab */}
           {activeTab === 'worksheets' && (
             <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md border border-white/20">
-              <div className="p-6 border-b border-gray-200/30">
+              <div className="p-4 md:p-6 border-b border-gray-200/30">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                   <h3 className="text-xl font-semibold" style={{ color: '#4BC0C8' }}>
                     My Worksheets ({purchasedWorksheets.length})
@@ -492,7 +492,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               
-              <div className="p-6">
+              <div className="p-4 md:p-6">
                 {filteredWorksheets.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="mx-auto h-12 w-12 mb-4" style={{ color: '#5C6B73', opacity: 0.5 }} />
@@ -542,12 +542,12 @@ export default function DashboardPage() {
           {/* Transaction History Tab */}
           {activeTab === 'history' && (
             <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md border border-white/20">
-              <div className="p-6 border-b border-gray-200/30">
+              <div className="p-4 md:p-6 border-b border-gray-200/30">
                 <h3 className="text-xl font-semibold" style={{ color: '#4BC0C8' }}>
                   Transaction History
                 </h3>
               </div>
-              <div className="p-6">
+              <div className="p-4 md:p-6">
                 {transactions.length === 0 ? (
                   <div className="text-center py-12">
                     <History className="mx-auto h-12 w-12 mb-4" style={{ color: '#5C6B73', opacity: 0.5 }} />
@@ -614,7 +614,7 @@ export default function DashboardPage() {
           {/* Recommendations Tab */}
           {activeTab === 'recommendations' && (
             <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md border border-white/20">
-              <div className="p-6 border-b border-gray-200/30">
+              <div className="p-4 md:p-6 border-b border-gray-200/30">
                 <h3 className="text-xl font-semibold" style={{ color: '#4BC0C8' }}>
                   Recommended for You
                 </h3>
@@ -622,7 +622,7 @@ export default function DashboardPage() {
                   Based on your purchase history and popular choices
                 </p>
               </div>
-              <div className="p-6">
+              <div className="p-4 md:p-6">
                 {recommendations.length === 0 ? (
                   <div className="text-center py-12">
                     <Star className="mx-auto h-12 w-12 mb-4" style={{ color: '#5C6B73', opacity: 0.5 }} />
