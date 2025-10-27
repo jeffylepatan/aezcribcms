@@ -196,72 +196,77 @@ export default function VideosPage() {
         <section className="py-8 bg-white shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            {/* Search Bar */}
+            {/* Search Bar (mirrors worksheets page layout for responsive behavior) */}
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6">
-              <div className="relative flex-1 max-w-md">
+              <div className="relative w-full md:flex-1 md:max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#5C6B73' }} />
                 <input
                   type="text"
                   placeholder="Search videos..."
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:border-blue-400 text-gray-900 placeholder-gray-600"
+                  className="md:w-auto w-full pl-10 pr-4 py-2 md:py-3 border-2 rounded-xl md:rounded-xl focus:outline-none focus:border-blue-400 text-gray-900 placeholder-gray-600"
                   style={{ borderColor: '#4BC0C8', backgroundColor: '#FFFFFF' }}
                 />
               </div>
-              
-              <div className="flex gap-3">
-                {/* View Mode Toggle */}
-                <div className="flex rounded-xl overflow-hidden shadow-md border-2" style={{ borderColor: '#4BC0C8' }}>
-                  <button
-                    onClick={() => setViewMode('cards')}
-                    className={`p-3 transition-all ${viewMode === 'cards' ? 'text-white' : 'text-gray-600 bg-white hover:bg-gray-50'}`}
-                    style={{ backgroundColor: viewMode === 'cards' ? '#4BC0C8' : undefined }}
-                    title="Card View"
-                  >
-                    <Grid3X3 className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('table')}
-                    className={`p-3 transition-all ${viewMode === 'table' ? 'text-white' : 'text-gray-600 bg-white hover:bg-gray-50'}`}
-                    style={{ backgroundColor: viewMode === 'table' ? '#4BC0C8' : undefined }}
-                    title="Table View"
-                  >
-                    <List className="w-5 h-5" />
-                  </button>
+
+              <div className="flex flex-col md:flex-row md:items-center md:gap-3 w-full">
+                <div className="flex items-center justify-between gap-3 w-full md:w-auto">
+                  {/* View Mode Toggle */}
+                  <div className="flex rounded-xl overflow-hidden shadow-md border-2" style={{ borderColor: '#4BC0C8' }}>
+                    <button
+                      onClick={() => setViewMode('cards')}
+                      className={`p-3 transition-all ${viewMode === 'cards' ? 'text-white' : 'text-gray-600 bg-white hover:bg-gray-50'}`}
+                      style={{ backgroundColor: viewMode === 'cards' ? '#4BC0C8' : undefined }}
+                      title="Card View"
+                    >
+                      <Grid3X3 className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('table')}
+                      className={`p-3 transition-all ${viewMode === 'table' ? 'text-white' : 'text-gray-600 bg-white hover:bg-gray-50'}`}
+                      style={{ backgroundColor: viewMode === 'table' ? '#4BC0C8' : undefined }}
+                      title="Table View"
+                    >
+                      <List className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Sort Dropdown (mobile: full width, desktop: auto) */}
+                  <div className="relative flex-1 md:flex-none">
+                    <select
+                      value={`${sortBy}-${sortOrder}`}
+                      onChange={(e) => {
+                        const [field, order] = e.target.value.split('-');
+                        setSortBy(field || '');
+                        setSortOrder(order as 'asc' | 'desc' || 'asc');
+                      }}
+                      className="appearance-none flex items-center px-4 py-3 rounded-xl font-semibold transition-all hover:scale-105 shadow-md text-gray-900 bg-white border-2 w-full md:w-auto"
+                      style={{ borderColor: '#4BC0C8' }}
+                    >
+                      <option value="">Default Order</option>
+                      <option value="title-asc">Title A-Z</option>
+                      <option value="title-desc">Title Z-A</option>
+                      <option value="views-desc">Most Views</option>
+                      <option value="views-asc">Least Views</option>
+                      <option value="description-asc">Description A-Z</option>
+                      <option value="description-desc">Description Z-A</option>
+                    </select>
+                    <ArrowUpDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: '#5C6B73' }} />
+                  </div>
                 </div>
 
-                {/* Sort Dropdown */}
-                <div className="relative">
-                  <select
-                    value={`${sortBy}-${sortOrder}`}
-                    onChange={(e) => {
-                      const [field, order] = e.target.value.split('-');
-                      setSortBy(field || '');
-                      setSortOrder(order as 'asc' | 'desc' || 'asc');
-                    }}
-                    className="appearance-none flex items-center px-4 py-3 rounded-xl font-semibold transition-all hover:scale-105 shadow-md text-gray-900 bg-white border-2 min-w-[160px]"
-                    style={{ borderColor: '#4BC0C8' }}
+                {/* Filters button in next row on mobile, inline on md+ */}
+                <div className="mt-3 md:mt-0 md:ml-3 w-full md:w-auto">
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="w-full md:w-auto flex items-center px-4 py-2 md:px-6 md:py-3 rounded-xl font-semibold transition-all hover:scale-105 shadow-md"
+                    style={{ backgroundColor: '#FFD166', color: '#2D3748' }}
                   >
-                    <option value="">Default Order</option>
-                    <option value="title-asc">Title A-Z</option>
-                    <option value="title-desc">Title Z-A</option>
-                    <option value="views-desc">Most Views</option>
-                    <option value="views-asc">Least Views</option>
-                    <option value="description-asc">Description A-Z</option>
-                    <option value="description-desc">Description Z-A</option>
-                  </select>
-                  <ArrowUpDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: '#5C6B73' }} />
+                    <Filter className="w-5 h-5 mr-2" />
+                    Filters {hasActiveFilters && `(${[searchKeyword, selectedVideoType, sortBy].filter(Boolean).length})`}
+                  </button>
                 </div>
-
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105 shadow-md"
-                  style={{ backgroundColor: '#FFD166', color: '#2D3748' }}
-                >
-                  <Filter className="w-5 h-5 mr-2" />
-                  Filters {hasActiveFilters && `(${[searchKeyword, selectedVideoType, sortBy].filter(Boolean).length})`}
-                </button>
               </div>
             </div>
 
@@ -349,7 +354,7 @@ export default function VideosPage() {
                   Array.from({ length: 8 }).map((_, index) => (
                     <div key={index} className="rounded-xl overflow-hidden shadow-lg flex flex-col animate-pulse" style={{ backgroundColor: '#FFFFFF' }}>
                       <div className="aspect-video bg-gray-200"></div>
-                      <div className="p-6 flex flex-col flex-grow">
+                      <div className="p-4 md:p-6 flex flex-col flex-grow">
                         <div className="w-3/4 h-6 bg-gray-200 rounded mb-2"></div>
                         <div className="w-full h-16 bg-gray-200 rounded mb-4"></div>
                         <div className="flex items-center justify-between mt-auto">
@@ -399,22 +404,22 @@ export default function VideosPage() {
                           alt={video.title}
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => openVideoModal(video)}
-                            className="w-16 h-16 rounded-full flex items-center justify-center"
-                            style={{ backgroundColor: '#FFD166' }}
-                          >
-                            <Play className="w-8 h-8 ml-1" style={{ color: '#5C6B73' }} />
-                          </button>
-                        </div>
+                          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => openVideoModal(video)}
+                              className="w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center"
+                              style={{ backgroundColor: '#FFD166' }}
+                            >
+                              <Play className="w-6 h-6 md:w-8 md:h-8 ml-1" style={{ color: '#5C6B73' }} />
+                            </button>
+                          </div>
                         {video.videoViews && (
                           <div className="absolute bottom-2 right-2 px-2 py-1 rounded text-xs font-medium" style={{ backgroundColor: 'rgba(0,0,0,0.7)', color: '#FFFFFF' }}>
                             {video.videoViews} views
                           </div>
                         )}
                       </div>
-                      <div className="p-6 flex flex-col flex-grow">
+                      <div className="p-4 md:p-6 flex flex-col flex-grow">
                         <h3 className="text-lg font-bold mb-2" style={{ color: '#5C6B73' }}>
                           {video.title}
                         </h3>
