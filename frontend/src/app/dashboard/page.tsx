@@ -226,7 +226,7 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-bold mb-2" style={{ color: '#4BC0C8' }}>
                 Welcome back, {greetingName}! 🌟
               </h1>
-              <p className="text-lg" style={{ color: '#5C6B73' }}>
+              <p className="text-lg text-center md:text-left" style={{ color: '#5C6B73' }}>
                 Manage your AezCoins and downloaded worksheets
               </p>
             </div>
@@ -378,7 +378,7 @@ export default function DashboardPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-md font-medium transition-all duration-300 ${
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-md font-medium transition-all duration-300 w-full md:w-auto ${
                     activeTab === tab.id
                       ? 'shadow-md transform scale-105'
                       : 'hover:opacity-80'
@@ -461,25 +461,25 @@ export default function DashboardPage() {
             <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md border border-white/20">
               <div className="p-4 md:p-6 border-b border-gray-200/30">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                  <h3 className="text-xl font-semibold" style={{ color: '#4BC0C8' }}>
+                  <h3 className="text-xl font-semibold md:text-left text-center" style={{ color: '#4BC0C8' }}>
                     My Worksheets ({purchasedWorksheets.length})
                   </h3>
-                  <div className="flex space-x-3">
-                    <div className="relative">
+                  <div className="flex md:flex-nowrap flex-wrap space-x-3">
+                    <div className="relative w-full md:w-auto">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" style={{ color: '#5C6B73' }} />
                       <input
                         type="text"
                         placeholder="Search worksheets..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-[#5C6B73]"
+                        className="w-full md:w-auto pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 placeholder-[#5C6B73]"
                         style={{ borderColor: '#4BC0C8', backgroundColor: '#FFFFFF', color: '#5C6B73' }}
                       />
                     </div>
                     <select
                       value={filterSubject}
                       onChange={(e) => setFilterSubject(e.target.value)}
-                      className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
+                      className="w-auto md:mt-0 mt-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
                       style={{ borderColor: '#4BC0C8', backgroundColor: '#FFFFFF', color: '#5C6B73' }}
                     >
                       <option value="all">All Subjects</option>
