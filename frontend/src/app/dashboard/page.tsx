@@ -293,7 +293,7 @@ export default function DashboardPage() {
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <Link
               href="/worksheets"
               className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-4 md:p-6 border border-white/20 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
@@ -315,52 +315,6 @@ export default function DashboardPage() {
                 </div>
               </div>
             </Link>
-
-            <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-4 md:p-6 border border-white/20">
-              <div className="flex items-center space-x-4">
-                <div 
-                  className="p-3 rounded-full"
-                  style={{ backgroundColor: 'rgba(255, 209, 102, 0.2)' }}
-                >
-                  <FileText className="h-6 w-6" style={{ color: '#FFD166' }} />
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-1" style={{ color: '#4BC0C8' }}>
-                    My Library
-                  </h3>
-                  <p className="text-sm" style={{ color: '#5C6B73', opacity: 0.8 }}>
-                    {purchasedWorksheets.length} purchased worksheets
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-md p-4 md:p-6 border border-white/20">
-              <div className="flex items-center space-x-4">
-                <div 
-                  className="p-3 rounded-full"
-                  style={{ backgroundColor: 'rgba(92, 107, 115, 0.1)' }}
-                >
-                  <img
-                    src="https://aezcrib.xyz/app/sites/default/files/assets/aezcoins.png"
-                    alt="AezCoins"
-                    className="h-6 w-6"
-                    style={{ display: 'block' }}
-                  />
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-1" style={{ color: '#4BC0C8' }}>
-                    Total Spent
-                  </h3>
-                  <p className="text-sm" style={{ color: '#5C6B73', opacity: 0.8 }}>
-                    {transactions
-                      .filter(t => t.type === 'worksheet_purchase')
-                      .reduce((sum, t) => sum + Number(t.amount || 0), 0)
-                      .toLocaleString()} AezCoins
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
