@@ -26,7 +26,7 @@ This Drupal custom module provides the AezCoins donation and worksheet purchase 
 - **Dual Transaction Types**: Credit purchases and worksheet purchases
 - **Status Tracking**: Pending, completed, failed, and refunded statuses
 - **Receipt Management**: Image upload for payment verification
-- **Real Money Tracking**: Links digital credits to actual donations
+- **Real Money Tracking**: Links digital credits to actual donations. 
 
 ## Installation
 
