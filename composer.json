@@ -26,7 +26,6 @@
         "drupal/imce": "^3.1",
         "drupal/mailsystem": "^4.5",
         "drupal/pathauto": "^1.14",
-        "drupal/phpmailer_smtp": "^2.2",
         "drupal/remove_http_headers": "^2.1",
         "drupal/restui": "^1.22",
         "drupal/seckit": "^2.0",
