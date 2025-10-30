@@ -79,6 +79,7 @@ class ComposerStaticInit6ec069325652d128670241363a26b95c
             'Psr\\Cache\\' => 10,
             'PhpTuf\\ComposerStager\\' => 22,
             'Peast\\' => 6,
+            'PHPMailer\\PHPMailer\\' => 20,
         ),
         'M' => 
         array (
@@ -278,6 +279,10 @@ class ComposerStaticInit6ec069325652d128670241363a26b95c
         'Peast\\' => 
         array (
             0 => __DIR__ . '/..' . '/mck89/peast/lib/Peast',
+        ),
+        'PHPMailer\\PHPMailer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
         'Masterminds\\' => 
         array (
