@@ -271,22 +271,25 @@ export default function DashboardPage() {
                   </p>
                 </div>
               </div>
-              <button
-                onClick={handleAddCredits}
-                className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:opacity-90 hover:scale-105 mb-4 md:mb-0"
-                style={{ backgroundColor: '#FFD166', color: '#1F2937' }}
-              >
-                <Plus className="h-4 w-4" />
-                <span>Donate to Add Credits</span>
-              </button>
-              <button
-                onClick={() => setShowUploadModal(true)}
-                className="ml-3 flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:opacity-90 hover:scale-105 mb-4 md:mb-0"
-                style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
-              >
-                <Users className="h-4 w-4" />
-                <span>Upload Worksheet</span>
-              </button>
+              <div className="flex items-center">
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:opacity-90 hover:scale-105 mb-4 md:mb-0"
+                  style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
+                >
+                  <Users className="h-4 w-4" />
+                  <span>Upload Worksheet</span>
+                </button>
+
+                <button
+                  onClick={handleAddCredits}
+                  className="ml-3 flex items-center space-x-2 px-3 py-1 rounded-lg font-medium transition-all duration-300 hover:opacity-90 hover:scale-105 mb-4 md:mb-0 text-sm"
+                  style={{ backgroundColor: '#FFD166', color: '#1F2937' }}
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>Donate</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
