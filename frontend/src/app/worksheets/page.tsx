@@ -8,6 +8,7 @@ import { Search, Filter, X, ArrowUpDown, Grid3X3, List } from 'lucide-react';
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import toast from 'react-hot-toast';
 import SafeImage from '@/components/SafeImage';
+import PdfPreview from '@/components/PdfPreview';
 
 // TypeScript interface for worksheet data from Drupal API
 interface WorksheetData {
@@ -49,6 +50,7 @@ export default function WorksheetsPage() {
   const [visibleCount, setVisibleCount] = useState(12);
   // Track which worksheet is currently being purchased to disable its Buy button
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   // Fetch worksheets from Drupal API
   useEffect(() => {
@@ -610,60 +612,80 @@ export default function WorksheetsPage() {
                             <span className="font-semibold">{worksheet.price}</span>
                           </div>
                           {(parseFloat(worksheet.price) === 0 || isWorksheetPurchased(worksheet.worksheetId)) ? (
-                            <a
-                              href={`https://aezcrib.xyz${worksheet.worksheet}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105"
-                              style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
-                            >
-                              Download
-                            </a>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => setPreviewUrl(`https://aezcrib.xyz${worksheet.worksheet}`)}
+                                className="px-3 py-1 rounded-lg font-semibold text-sm transition-all hover:scale-105"
+                                style={{ backgroundColor: '#E6F7FF', color: '#0B7285' }}
+                              >
+                                Preview
+                              </button>
+
+                              <a
+                                href={`https://aezcrib.xyz${worksheet.worksheet}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105"
+                                style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
+                              >
+                                Download
+                              </a>
+                            </div>
                           ) : (
-                            <button
-                              onClick={async () => {
-                                if (!isAuthenticated) {
-                                  window.location.href = '/login';
-                                  return;
-                                }
-                                setPurchasingId(worksheet.worksheetId);
-                                try {
-                                  // Fetch current user credits
-                                  const creditsData = await commerceService.getCredits();
-                                  const userCredits = creditsData.credits ?? 0;
-                                  const worksheetPrice = parseFloat(worksheet.price);
-                                  console.log('User Credits:', userCredits);
-                                  console.log('Worksheet Price:', worksheetPrice);
-                                  if (userCredits < worksheetPrice) {
-                                    toast.error('Insufficient AezCoins. Please add more credits to purchase this worksheet.');
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => setPreviewUrl(`https://aezcrib.xyz${worksheet.worksheet}`)}
+                                className="px-3 py-1 rounded-lg font-semibold text-sm transition-all hover:scale-105"
+                                style={{ backgroundColor: '#E6F7FF', color: '#0B7285' }}
+                              >
+                                Preview
+                              </button>
+
+                              <button
+                                onClick={async () => {
+                                  if (!isAuthenticated) {
+                                    window.location.href = '/login';
                                     return;
                                   }
-                                  // Call purchase API (commerceService returns parsed response)
-                                  const purchaseData = await commerceService.purchaseWorksheet(parseInt(worksheet.worksheetId, 10));
-                                  if (!purchaseData || !purchaseData.success) {
-                                    console.error('Purchase API Response:', purchaseData);
-                                    toast.error(`Purchase failed: ${purchaseData?.error || 'Unknown error'}`);
-                                    return;
-                                  }
-                                  // Update local state and refresh dashboard data so UI updates without full reload
-                                  toast.success('Purchase successful! The worksheet has been added to your library and your credits have been updated.');
+                                  setPurchasingId(worksheet.worksheetId);
                                   try {
-                                    await fetchDashboardData();
+                                    // Fetch current user credits
+                                    const creditsData = await commerceService.getCredits();
+                                    const userCredits = creditsData.credits ?? 0;
+                                    const worksheetPrice = parseFloat(worksheet.price);
+                                    console.log('User Credits:', userCredits);
+                                    console.log('Worksheet Price:', worksheetPrice);
+                                    if (userCredits < worksheetPrice) {
+                                      toast.error('Insufficient AezCoins. Please add more credits to purchase this worksheet.');
+                                      return;
+                                    }
+                                    // Call purchase API (commerceService returns parsed response)
+                                    const purchaseData = await commerceService.purchaseWorksheet(parseInt(worksheet.worksheetId, 10));
+                                    if (!purchaseData || !purchaseData.success) {
+                                      console.error('Purchase API Response:', purchaseData);
+                                      toast.error(`Purchase failed: ${purchaseData?.error || 'Unknown error'}`);
+                                      return;
+                                    }
+                                    // Update local state and refresh dashboard data so UI updates without full reload
+                                    toast.success('Purchase successful! The worksheet has been added to your library and your credits have been updated.');
+                                    try {
+                                      await fetchDashboardData();
+                                    } catch (err) {
+                                      console.error('Failed to refresh dashboard data after purchase:', err);
+                                    }
                                   } catch (err) {
-                                    console.error('Failed to refresh dashboard data after purchase:', err);
+                                    toast.error('An error occurred during purchase. Please try again.');
+                                  } finally {
+                                    setPurchasingId(null);
                                   }
-                                } catch (err) {
-                                  toast.error('An error occurred during purchase. Please try again.');
-                                } finally {
-                                  setPurchasingId(null);
-                                }
-                              }}
-                              disabled={purchasingId === worksheet.worksheetId}
-                              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105 shadow-md ${purchasingId === worksheet.worksheetId ? 'opacity-60 cursor-not-allowed hover:scale-100' : ''}`}
-                              style={{ backgroundColor: '#FFD166', color: '#2D3748' }}
-                            >
-                              {purchasingId === worksheet.worksheetId ? 'Purchasing...' : 'Buy'}
-                            </button>
+                                }}
+                                disabled={purchasingId === worksheet.worksheetId}
+                                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105 shadow-md ${purchasingId === worksheet.worksheetId ? 'opacity-60 cursor-not-allowed hover:scale-100' : ''}`}
+                                style={{ backgroundColor: '#FFD166', color: '#2D3748' }}
+                              >
+                                {purchasingId === worksheet.worksheetId ? 'Purchasing...' : 'Buy'}
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -785,29 +807,49 @@ export default function WorksheetsPage() {
                             </td>
                             <td className="px-6 py-4">
                               {(parseFloat(worksheet.price) === 0 || isWorksheetPurchased(worksheet.worksheetId)) ? (
-                                <a
-                                  href={`https://aezcrib.xyz${worksheet.worksheet}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="px-3 py-1 rounded-lg font-semibold text-xs transition-all hover:scale-105"
-                                  style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
-                                >
-                                  Download
-                                </a>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => setPreviewUrl(`https://aezcrib.xyz${worksheet.worksheet}`)}
+                                    className="px-2 py-1 rounded-lg font-semibold text-xs transition-all hover:scale-105"
+                                    style={{ backgroundColor: '#E6F7FF', color: '#0B7285' }}
+                                  >
+                                    Preview
+                                  </button>
+
+                                  <a
+                                    href={`https://aezcrib.xyz${worksheet.worksheet}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-3 py-1 rounded-lg font-semibold text-xs transition-all hover:scale-105"
+                                    style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
+                                  >
+                                    Download
+                                  </a>
+                                </div>
                               ) : (
-                                <button
-                                  onClick={() => {
-                                    if (!isAuthenticated) {
-                                      window.location.href = '/login';
-                                    } else {
-                                      toast('Purchase functionality coming soon!');
-                                    }
-                                  }}
-                                  className="px-3 py-1 rounded-lg font-semibold text-xs transition-all hover:scale-105"
-                                  style={{ backgroundColor: '#FFD166', color: '#2D3748' }}
-                                >
-                                  Buy
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => setPreviewUrl(`https://aezcrib.xyz${worksheet.worksheet}`)}
+                                    className="px-2 py-1 rounded-lg font-semibold text-xs transition-all hover:scale-105"
+                                    style={{ backgroundColor: '#E6F7FF', color: '#0B7285' }}
+                                  >
+                                    Preview
+                                  </button>
+
+                                  <button
+                                    onClick={() => {
+                                      if (!isAuthenticated) {
+                                        window.location.href = '/login';
+                                      } else {
+                                        toast('Purchase functionality coming soon!');
+                                      }
+                                    }}
+                                    className="px-3 py-1 rounded-lg font-semibold text-xs transition-all hover:scale-105"
+                                    style={{ backgroundColor: '#FFD166', color: '#2D3748' }}
+                                  >
+                                    Buy
+                                  </button>
+                                </div>
                               )}
                             </td>
                           </tr>
@@ -821,6 +863,8 @@ export default function WorksheetsPage() {
           </div>
         </section>
       </main>
+
+      {previewUrl && <PdfPreview url={previewUrl} onClose={() => setPreviewUrl(null)} />}
 
       <Footer />
     </div>
