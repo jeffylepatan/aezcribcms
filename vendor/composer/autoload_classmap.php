@@ -46,6 +46,7 @@ return array(
     'PEAR_Error' => $vendorDir . '/pear/pear-core-minimal/src/PEAR.php',
     'PEAR_ErrorStack' => $vendorDir . '/pear/pear-core-minimal/src/PEAR/ErrorStack.php',
     'PEAR_Exception' => $vendorDir . '/pear/pear_exception/PEAR/Exception.php',
+    'ReflectionConstant' => $vendorDir . '/symfony/polyfill-php84/Resources/stubs/ReflectionConstant.php',
     'SQLite3Exception' => $vendorDir . '/symfony/polyfill-php83/Resources/stubs/SQLite3Exception.php',
     'SebastianBergmann\\Diff\\Chunk' => $vendorDir . '/sebastian/diff/src/Chunk.php',
     'SebastianBergmann\\Diff\\ConfigurationException' => $vendorDir . '/sebastian/diff/src/Exception/ConfigurationException.php',
