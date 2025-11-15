@@ -496,6 +496,11 @@ class WorksheetController extends ControllerBase {
         'status' => 1,
       ];
 
+      // Ensure the uploading user is set as the node author.
+      // Add `uid` so the node is created with the correct author, and
+      // also call setOwnerId() before saving as a safe secondary measure.
+      $node_values['uid'] = $user_id;
+
       // Price may be stored as numeric field. Multiply by 2 before saving (reward or internal conversion).
       if (is_numeric($price)) {
         // Normalize to a number and multiply by 2.
@@ -527,6 +532,14 @@ class WorksheetController extends ControllerBase {
         $node->set('field_worksheet_image', [
           ['target_id' => $thumb_file->id()],
         ]);
+      }
+
+      // Ensure owner is correctly assigned before saving.
+      if (method_exists($node, 'setOwnerId')) {
+        $node->setOwnerId($user_id);
+      } else {
+        // Fallback: set the uid property if setOwnerId isn't available.
+        $node->set('uid', $user_id);
       }
 
       $node->save();

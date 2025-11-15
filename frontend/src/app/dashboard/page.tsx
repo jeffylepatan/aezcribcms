@@ -50,6 +50,7 @@ export default function DashboardPage() {
   const [wsDescription, setWsDescription] = useState('');
   const [wsLevel, setWsLevel] = useState('pre_k');
   const [wsSubject, setWsSubject] = useState('language_literacy');
+  const [wsAuthor, setWsAuthor] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -273,7 +274,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center">
                 <button
-                  onClick={() => setShowUploadModal(true)}
+                  onClick={() => { setWsAuthor(greetingName || user?.name || ''); setShowUploadModal(true); }}
                   className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:opacity-90 hover:scale-105 mb-4 md:mb-0"
                   style={{ backgroundColor: '#4BC0C8', color: '#FFFFFF' }}
                 >
@@ -747,6 +748,17 @@ export default function DashboardPage() {
                 </div>
 
                 <div>
+                  <label className="block text-sm mb-1" style={{ color: '#5C6B73' }}>Authored By</label>
+                  <input
+                    type="text"
+                    value={wsAuthor}
+                    onChange={(e) => setWsAuthor(e.target.value)}
+                    className="w-full px-3 py-2 border rounded placeholder-[#5C6B73] font-medium text-gray-700"
+                    placeholder="Author name"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-sm mb-1" style={{ color: '#5C6B73' }}>Description</label>
                   <textarea
                     value={wsDescription}
@@ -782,6 +794,7 @@ export default function DashboardPage() {
                         form.append('description', wsDescription || '');
                         form.append('gradeLevel', wsLevel);
                         form.append('subject', wsSubject);
+                        form.append('author', wsAuthor || greetingName || user?.name || '');
                         form.append('file', wsFile as File);
                         if (wsImage) form.append('thumbnail', wsImage);
 
@@ -789,7 +802,7 @@ export default function DashboardPage() {
                         if (res && res.success) {
                           // Close modal and refresh data
                           setShowUploadModal(false);
-                          setWsTitle(''); setWsFile(null); setWsImage(null); setWsPrice('0'); setWsDescription(''); setWsLevel('pre_k'); setWsSubject('language_literacy');
+                          setWsTitle(''); setWsFile(null); setWsImage(null); setWsPrice('0'); setWsDescription(''); setWsLevel('pre_k'); setWsSubject('language_literacy'); setWsAuthor(greetingName || user?.name || '');
                           await fetchDashboardData();
                           setActiveTab('worksheets');
                           toast.success('Worksheet uploaded successfully. It may take a moment to appear in your library.');
