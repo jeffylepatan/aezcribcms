@@ -19,6 +19,7 @@ interface WorksheetData {
   price: string;
   subject: string;
   worksheetId: string;
+  uid: string;
 }
 
 export default function WorksheetsPage() {
@@ -33,6 +34,7 @@ export default function WorksheetsPage() {
   // Filter states
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedAuthor, setSelectedAuthor] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('');
   const [selectedPriceFilter, setSelectedPriceFilter] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -124,6 +126,11 @@ export default function WorksheetsPage() {
     return [...new Set(levels)].sort();
   }, [worksheets]);
 
+  const uniqueAuthors = useMemo(() => {
+    const authors = worksheets.map(w => w.uid).filter(Boolean);
+    return [...new Set(authors)].sort();
+  }, [worksheets]);
+
   // Filter worksheets based on search and filters, then sort
   const filteredWorksheets = useMemo(() => {
     let filtered = worksheets.filter(worksheet => {
@@ -138,13 +145,16 @@ export default function WorksheetsPage() {
       // Level filter
       const matchesLevel = selectedLevel === '' || worksheet.level === selectedLevel;
 
+      // Author filter
+      const matchesAuthor = selectedAuthor === '' || worksheet.uid === selectedAuthor;
+
       // Price filter
       const worksheetPrice = parseFloat(worksheet.price);
       const matchesPrice = selectedPriceFilter === '' || 
         (selectedPriceFilter === 'free' && worksheetPrice === 0) ||
         (selectedPriceFilter === 'paid' && worksheetPrice > 0);
 
-      return matchesSearch && matchesSubject && matchesLevel && matchesPrice;
+      return matchesSearch && matchesSubject && matchesLevel && matchesPrice && matchesAuthor;
     });
 
     // Apply sorting
@@ -176,12 +186,13 @@ export default function WorksheetsPage() {
     }
 
     return filtered;
-  }, [worksheets, searchKeyword, selectedSubject, selectedLevel, selectedPriceFilter, sortBy, sortOrder]);
+  }, [worksheets, searchKeyword, selectedSubject, selectedLevel, selectedPriceFilter, selectedAuthor, sortBy, sortOrder]);
 
   // Clear all filters and sorting
   const clearFilters = () => {
     setSearchKeyword('');
     setSelectedSubject('');
+    setSelectedAuthor('');
     setSelectedLevel('');
     setSelectedPriceFilter('');
     setSortBy('');
@@ -191,7 +202,7 @@ export default function WorksheetsPage() {
   // Reset visible count when filters or sorting change
   useEffect(() => {
     setVisibleCount(12);
-  }, [searchKeyword, selectedSubject, selectedLevel, selectedPriceFilter, sortBy, sortOrder]);
+  }, [searchKeyword, selectedSubject, selectedAuthor, selectedLevel, selectedPriceFilter, sortBy, sortOrder]);
 
   // Infinite scroll sentinel
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -217,6 +228,10 @@ export default function WorksheetsPage() {
   }, [filteredWorksheets.length, visibleCount]);
 
   const hasActiveFilters = searchKeyword || selectedSubject || selectedLevel || selectedPriceFilter || sortBy;
+  // include author filter in active-filters detection
+  // `hasActiveFilters` is used to show the Clear All button and the Filters badge
+  // Treat selectedAuthor the same as other selected filters
+  const hasActiveFiltersWithAuthor = hasActiveFilters || selectedAuthor;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#D9F7F4' }}>
@@ -341,7 +356,7 @@ export default function WorksheetsPage() {
                     style={{ backgroundColor: '#FFD166', color: '#2D3748' }}
                   >
                     <Filter className="w-5 h-5 mr-2" />
-                    Filters {hasActiveFilters && `(${[searchKeyword, selectedSubject, selectedLevel, selectedPriceFilter, sortBy].filter(Boolean).length})`}
+                    Filters {hasActiveFiltersWithAuthor && `(${[searchKeyword, selectedSubject, selectedLevel, selectedPriceFilter, selectedAuthor, sortBy].filter(Boolean).length})`}
                   </button>
                 </div>
               </div>
@@ -354,7 +369,7 @@ export default function WorksheetsPage() {
                   <h3 className="text-lg font-semibold" style={{ color: '#2D3748' }}>
                     Filter Worksheets
                   </h3>
-                  {hasActiveFilters && (
+                  {hasActiveFiltersWithAuthor && (
                     <button
                       onClick={clearFilters}
                       className="flex items-center text-sm px-3 py-1 rounded-lg transition-all hover:scale-105"
@@ -366,7 +381,7 @@ export default function WorksheetsPage() {
                   )}
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid md:grid-cols-4 gap-4">
                   {/* Subject Filter */}
                   <div>
                     <label className="block text-sm font-medium mb-2" style={{ color: '#2D3748' }}>
@@ -381,6 +396,24 @@ export default function WorksheetsPage() {
                       <option value="">All Subjects</option>
                       {uniqueSubjects.map(subject => (
                         <option key={subject} value={subject}>{subject}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Author Filter */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: '#2D3748' }}>
+                      Author
+                    </label>
+                    <select
+                      value={selectedAuthor}
+                      onChange={(e) => setSelectedAuthor(e.target.value)}
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-400 text-gray-900 bg-white"
+                      style={{ borderColor: '#4BC0C8' }}
+                    >
+                      <option value="">All Authors</option>
+                      {uniqueAuthors.map(author => (
+                        <option key={author} value={author}>{author}</option>
                       ))}
                     </select>
                   </div>
@@ -424,7 +457,7 @@ export default function WorksheetsPage() {
             )}
 
             {/* Active Filters Display */}
-            {hasActiveFilters && (
+            {hasActiveFiltersWithAuthor && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {searchKeyword && (
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium shadow-sm" style={{ backgroundColor: '#E6FFFA', color: '#0B7285', border: '1px solid #B2F5EA' }}>
@@ -438,6 +471,14 @@ export default function WorksheetsPage() {
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium shadow-sm" style={{ backgroundColor: '#E6FFFA', color: '#0B7285', border: '1px solid #B2F5EA' }}>
                     Subject: {selectedSubject}
                     <button onClick={() => setSelectedSubject('')} className="ml-2 hover:bg-teal-200 rounded-full p-1">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </span>
+                )}
+                {selectedAuthor && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium shadow-sm" style={{ backgroundColor: '#E6FFFA', color: '#0B7285', border: '1px solid #B2F5EA' }}>
+                    Author: {selectedAuthor}
+                    <button onClick={() => setSelectedAuthor('')} className="ml-2 hover:bg-teal-200 rounded-full p-1">
                       <X className="w-4 h-4" />
                     </button>
                   </span>
@@ -515,9 +556,9 @@ export default function WorksheetsPage() {
                   // No results state
                   <div className="col-span-full text-center py-12">
                     <p className="text-lg mb-4" style={{ color: '#2D3748' }}>
-                      {hasActiveFilters ? '🔍 No worksheets match your current filters' : '📚 No worksheets available at the moment'}
+                      {hasActiveFiltersWithAuthor ? '🔍 No worksheets match your current filters' : '📚 No worksheets available at the moment'}
                     </p>
-                    {hasActiveFilters && (
+                    {hasActiveFiltersWithAuthor && (
                       <button
                         onClick={clearFilters}
                         className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105 shadow-md"
@@ -550,11 +591,14 @@ export default function WorksheetsPage() {
                         <h3 className="text-lg font-bold mb-2" style={{ color: '#1A202C' }}>
                           {worksheet.name}
                         </h3>
-                        <p className="text-sm mb-4 flex-grow" style={{ color: '#4A5568' }}>
+                        <p className="text-sm mb-2" style={{ color: '#4A5568' }}>
                           {worksheet.description.length > 120 
                             ? `${worksheet.description.substring(0, 120)}...` 
                             : worksheet.description}
                         </p>
+                        {worksheet.uid && (
+                          <div className="text-xs text-gray-600 mb-4">By {worksheet.uid}</div>
+                        )}
                         <div className="flex items-center justify-between mt-auto">
                           <div className="flex items-center text-sm" style={{ color: '#2D3748' }}>
                             <SafeImage
@@ -713,6 +757,9 @@ export default function WorksheetsPage() {
                                     ? `${worksheet.description.substring(0, 80)}...` 
                                     : worksheet.description}
                                 </p>
+                                {worksheet.uid && (
+                                  <div className="text-xs text-gray-600 mt-1">By {worksheet.uid}</div>
+                                )}
                               </div>
                             </td>
                             <td className="px-6 py-4">
